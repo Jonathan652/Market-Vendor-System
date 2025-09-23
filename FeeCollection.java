@@ -24,10 +24,10 @@ public class FeeCollection extends javax.swing.JFrame {
         initComponents();
         loadVendors();
         loadTodaysFees();
-        calculateTotals(); // Show totals when form opens
+        calculateTotals(); 
     
-    // Set default amount
-    txtfee.setText("1000"); // Replace with your amount field
+    
+    txtfee.setText("1000"); 
 
 
     }
@@ -38,7 +38,7 @@ public class FeeCollection extends javax.swing.JFrame {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         
-        cmbvendor.removeAllItems(); // Replace with your combo box name
+        cmbvendor.removeAllItems(); 
         cmbvendor.addItem("Select Vendor");
         
         while (rs.next()) {
@@ -76,8 +76,8 @@ public class FeeCollection extends javax.swing.JFrame {
                 double totalCollected = rs.getDouble("total_collected");
                 double totalPending = rs.getDouble("total_pending");
                 
-                lbCollected.setText("Total Collected: UGX " + totalCollected); // Replace with your label
-                lbpending.setText("Total Pending: UGX " + totalPending); // Replace with your label
+                lbCollected.setText("Total Collected: UGX " + totalCollected); 
+                lbpending.setText("Total Pending: UGX " + totalPending); 
             }
         }
     } catch (SQLException e) {
@@ -259,7 +259,7 @@ public class FeeCollection extends javax.swing.JFrame {
         return;
     }
     
-    String amountText = txtfee.getText().trim(); // Replace with your amount field
+    String amountText = txtfee.getText().trim(); 
     if (amountText.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter fee amount!");
         return;
@@ -281,9 +281,9 @@ public class FeeCollection extends javax.swing.JFrame {
         
         if (result > 0) {
             JOptionPane.showMessageDialog(this, "Fee generated successfully!");
-            txtfee.setText("1000"); // Reset to default
+            txtfee.setText("1000"); 
             cmbvendor.setSelectedIndex(0);
-            loadTodaysFees(); // Refresh the fees table
+            loadTodaysFees(); 
         }
         
         conn.close();

@@ -24,8 +24,8 @@ public class AddStall extends javax.swing.JFrame {
 }
 
 private void setupSectionComboBox() {
-    // Add common sections to your combo box (replace with your combo box name)
-    cmboxsection.removeAllItems(); // Replace with your actual combo box name
+    
+    cmboxsection.removeAllItems(); 
     cmboxsection.addItem("Food");
     cmboxsection.addItem("Clothing");
     cmboxsection.addItem("Electronics");
@@ -172,11 +172,11 @@ private void setupSectionComboBox() {
     private void btnsaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsaveActionPerformed
         // TODO add your handling code here:
         
-    String stallNumber = txtstallnumber.getText().trim(); // Replace with your text field name
-    String section = cmboxsection.getSelectedItem().toString(); // Replace with your combo box name
-    String rentText = txtmonthlyrent.getText().trim(); // Replace with your rent field name
+    String stallNumber = txtstallnumber.getText().trim(); 
+    String section = cmboxsection.getSelectedItem().toString(); 
+    String rentText = txtmonthlyrent.getText().trim(); 
     
-    // Validate input
+    
     if (stallNumber.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter stall number!");
         txtstallnumber.requestFocus();
@@ -189,14 +189,14 @@ private void setupSectionComboBox() {
         return;
     }
     
-    // Validate stall number format (should be like A01, B15, etc.)
+    
     if (!stallNumber.matches("[A-Za-z][0-9]+")) {
         JOptionPane.showMessageDialog(this, "Stall number should be like: A01, B15, C03!");
         txtstallnumber.requestFocus();
         return;
     }
     
-    // Validate rent amount
+    
     double rent;
     try {
         rent = Double.parseDouble(rentText);
@@ -211,11 +211,11 @@ private void setupSectionComboBox() {
         return;
     }
     
-    // Save to database
+    
     try {
         Connection conn = getConnection();
         if (conn != null) {
-            // Check if stall number already exists
+            
             String checkSql = "SELECT * FROM stalls WHERE stall_number = ?";
             PreparedStatement checkPst = conn.prepareStatement(checkSql);
             checkPst.setString(1, stallNumber.toUpperCase());
@@ -228,7 +228,7 @@ private void setupSectionComboBox() {
                 return;
             }
             
-            // Insert new stall
+            
             String sql = "INSERT INTO stalls (stall_number, section, monthly_rent, status) VALUES (?, ?, ?, 'Available')";
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1, stallNumber.toUpperCase());
@@ -262,7 +262,7 @@ private void setupSectionComboBox() {
 
     private void btndeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btndeleteActionPerformed
         // TODO add your handling code here:
-        String stallNumber = txtstallnumber.getText().trim(); // Replace with your field name
+        String stallNumber = txtstallnumber.getText().trim(); 
     
     if (stallNumber.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter stall number to delete!");

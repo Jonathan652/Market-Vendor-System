@@ -27,8 +27,8 @@ public class StallManagement extends javax.swing.JFrame {
          setupTable();
     }
     private void setupTable() {
-        // Make table look better
-        tblstalls.setRowHeight(25); // Replace with your table name
+        
+        tblstalls.setRowHeight(25); 
         tblstalls.setGridColor(java.awt.Color.LIGHT_GRAY);
         tblstalls.setSelectionBackground(new java.awt.Color(184, 207, 229));
     }
@@ -42,11 +42,11 @@ public class StallManagement extends javax.swing.JFrame {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             
-            // Get your table model (replace jTable1 with your actual table name)
-            DefaultTableModel model = (DefaultTableModel) tblstalls.getModel();
-            model.setRowCount(0); // Clear existing data
             
-            // Set column names
+            DefaultTableModel model = (DefaultTableModel) tblstalls.getModel();
+            model.setRowCount(0); 
+            
+            
             model.setColumnIdentifiers(new Object[]{"Stall Number", "Section", "Monthly Rent", "Status"});
             
             while (rs.next()) {

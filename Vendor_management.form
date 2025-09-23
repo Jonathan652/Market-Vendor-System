@@ -67,21 +67,30 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Edit_vendor"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btneditvendorActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnviewdeatils">
       <Properties>
-        <Property name="text" type="java.lang.String" value="View_deatils"/>
+        <Property name="text" type="java.lang.String" value="view details"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnassignproducts">
       <Properties>
         <Property name="text" type="java.lang.String" value="Assign_products"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnassignproductsActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnbacktodashboard">
       <Properties>
         <Property name="text" type="java.lang.String" value="Back_to_dashboard"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnbacktodashboardActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

@@ -81,7 +81,7 @@ public class User_login extends javax.swing.JFrame {
     try {
         Connection conn = DbConnection.getConnection();
         if (conn != null) {
-            // First check if username already exists
+            
             String checkSql = "SELECT * FROM users WHERE username = ?";
             PreparedStatement checkPst = conn.prepareStatement(checkSql);
             checkPst.setString(1, username);
@@ -93,14 +93,14 @@ public class User_login extends javax.swing.JFrame {
                 return;
             }
             
-            // Ask for full name
+           
             String fullName = JOptionPane.showInputDialog(this, "Enter your full name:");
             if (fullName == null || fullName.trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Full name is required!");
                 return;
             }
             
-            // Create new account
+           
             String insertSql = "INSERT INTO users (username, password, full_name, role) VALUES (?, ?, ?, 'User')";
             PreparedStatement insertPst = conn.prepareStatement(insertSql);
             insertPst.setString(1, username);

@@ -35,8 +35,8 @@ public class Paymentform extends javax.swing.JFrame {
         cmboxpaymentmethod.addItem("Bank Transfer");
         cmboxpaymentmethod.addItem("Cheque");
     }
-    // Load outstanding fees into table
-    // Load outstanding fees into table
+    
+    
 
     public void loadOutstandingFeesTable() {
         try {
@@ -81,7 +81,7 @@ public class Paymentform extends javax.swing.JFrame {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
 
-            cmbfeepay.removeAllItems(); // Replace with your "Select fee to pay" combo box
+            cmbfeepay.removeAllItems(); 
             cmbfeepay.addItem("Select fee to pay");
 
             while (rs.next()) {

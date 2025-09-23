@@ -25,7 +25,7 @@ public class Add_vendor extends javax.swing.JFrame {
 }
 
 private void setupComboBox() {
-    cmboxvendortype.removeAllItems(); // Replace with your combo box name
+    cmboxvendortype.removeAllItems(); 
     cmboxvendortype.addItem("Permanent");
     cmboxvendortype.addItem("Temporary");
     }
@@ -45,12 +45,12 @@ private void setupComboBox() {
 }
     
     public void saveVendor() {
-    String firstName = txtfirstname.getText().trim(); // Replace with your field name
-    String lastName = txtlastname.getText().trim(); // Replace with your field name
-    String phone = txtphone.getText().trim(); // Replace with your field name
-    String vendorType = cmboxvendortype.getSelectedItem().toString(); // Replace with your combo box name
+    String firstName = txtfirstname.getText().trim(); 
+    String lastName = txtlastname.getText().trim(); 
+    String phone = txtphone.getText().trim(); 
+    String vendorType = cmboxvendortype.getSelectedItem().toString(); 
     
-    // Validate input
+    
     if (firstName.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter first name!");
         txtfirstname.requestFocus();
@@ -69,7 +69,7 @@ private void setupComboBox() {
         return;
     }
     
-    // Validate phone number (basic check)
+    
     if (!phone.matches("07[0-9]{8}")) {
         JOptionPane.showMessageDialog(this, "Please enter a valid phone number (07xxxxxxxx)!");
         txtphone.requestFocus();
@@ -79,7 +79,7 @@ private void setupComboBox() {
     try {
         Connection conn = getConnection();
         if (conn != null) {
-            // Check if phone number already exists
+            
             String checkSql = "SELECT * FROM vendors WHERE phone = ?";
             PreparedStatement checkPst = conn.prepareStatement(checkSql);
             checkPst.setString(1, phone);
@@ -92,7 +92,7 @@ private void setupComboBox() {
                 return;
             }
             
-            // Insert new vendor
+            
             String sql = "INSERT INTO vendors (first_name, last_name, phone, vendor_type, status) VALUES (?, ?, ?, ?, 'Active')";
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1, firstName);
@@ -248,7 +248,7 @@ private void setupComboBox() {
     
     if (confirm == JOptionPane.YES_OPTION) {
         this.setVisible(false);
-        new MainDashBoard().setVisible(true); // Or whatever form you came from
+        new MainDashBoard().setVisible(true);
     }
 
     }//GEN-LAST:event_btncancelActionPerformed

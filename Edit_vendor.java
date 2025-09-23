@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
  */
 public class Edit_vendor extends javax.swing.JFrame {
 
-    private int vendorId = -1; // To know which vendor we're editing
+    private int vendorId = -1; 
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Edit_vendor.class.getName());
 
@@ -58,23 +58,23 @@ public class Edit_vendor extends javax.swing.JFrame {
         String phone = txtphone.getText().trim();
         String vendorType = cmboxvendortype.getSelectedItem().toString();
 
-        // Same validation as AddVendor
+       
         if (firstName.isEmpty() || lastName.isEmpty() || phone.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill all fields!");
             return;
         }
 
         try {
-            // UPDATE instead of INSERT
+            
             try (Connection conn = DbConnection.getConnection()) {
-                // UPDATE instead of INSERT
+                
                 String sql = "UPDATE vendors SET first_name = ?, last_name = ?, phone = ?, vendor_type = ? WHERE vendor_id = ?";
                 PreparedStatement pst = conn.prepareStatement(sql);
                 pst.setString(1, firstName);
                 pst.setString(2, lastName);
                 pst.setString(3, phone);
                 pst.setString(4, vendorType);
-                pst.setInt(5, vid); // Use the vendor ID
+                pst.setInt(5, vid); 
 
                 int result = pst.executeUpdate();
 

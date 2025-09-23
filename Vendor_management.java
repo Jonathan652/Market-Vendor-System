@@ -44,12 +44,27 @@ public class Vendor_management extends javax.swing.JFrame {
         });
 
         btneditvendor.setText("Edit_vendor");
+        btneditvendor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btneditvendorActionPerformed(evt);
+            }
+        });
 
-        btnviewdeatils.setText("View_deatils");
+        btnviewdeatils.setText("view details");
 
         btnassignproducts.setText("Assign_products");
+        btnassignproducts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnassignproductsActionPerformed(evt);
+            }
+        });
 
         btnbacktodashboard.setText("Back_to_dashboard");
+        btnbacktodashboard.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnbacktodashboardActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -86,7 +101,27 @@ public class Vendor_management extends javax.swing.JFrame {
 
     private void btnaddvendorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnaddvendorActionPerformed
         // TODO add your handling code here:
+        this.setVisible(false);
+        new Add_vendor().setVisible(true);
     }//GEN-LAST:event_btnaddvendorActionPerformed
+
+    private void btneditvendorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneditvendorActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        new Edit_vendor().setVisible(true);
+    }//GEN-LAST:event_btneditvendorActionPerformed
+
+    private void btnassignproductsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnassignproductsActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        new VendorProduct().setVisible(true);
+    }//GEN-LAST:event_btnassignproductsActionPerformed
+
+    private void btnbacktodashboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbacktodashboardActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        new Vendor_management().setVisible(true);
+    }//GEN-LAST:event_btnbacktodashboardActionPerformed
 
     /**
      * @param args the command line arguments

@@ -33,13 +33,13 @@ public class StallAssignment extends javax.swing.JFrame {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         
-        // Clear existing items (replace with your actual combo box name)
-        jComboBox1.removeAllItems(); // Replace with your vendor combo box name
-        jComboBox1.addItem("Select Vendor");
+        
+        cmbvendor.removeAllItems(); 
+        cmbvendor.addItem("Select Vendor");
         
         while (rs.next()) {
             String item = rs.getInt("vendor_id") + " - " + rs.getString("vendor_name");
-            jComboBox1.addItem(item);
+            cmbvendor.addItem(item);
         }
         
         conn.close();
@@ -54,7 +54,7 @@ public class StallAssignment extends javax.swing.JFrame {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
         
-        // Build list of available stalls for your list component
+        
         java.util.Vector<String> stallList = new java.util.Vector<>();
         
         while (rs.next()) {
@@ -64,8 +64,8 @@ public class StallAssignment extends javax.swing.JFrame {
             stallList.add(stallInfo);
         }
         
-        // Set data to your list component (replace with your actual list name)
-        jList1.setListData(stallList); // Replace with your stalls list name
+       
+        lstavailable.setListData(stallList); 
         
         conn.close();
     } catch (Exception e) {
@@ -73,16 +73,13 @@ public class StallAssignment extends javax.swing.JFrame {
     }
 }
     public String getSelectedDate() {
-    // Get date from your date picker component
-    // This depends on what date component you're using
-    // For now, I'll use current date as example
-    LocalDate selectedDate = LocalDate.now(); // Replace with actual date from your picker
     
-    // If using JDateChooser or similar, it might be:
-    // Date date = jDateChooser1.getDate();
-    // LocalDate selectedDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     
-    return selectedDate.toString(); // Returns format: 2025-09-22
+    
+    LocalDate selectedDate = LocalDate.now(); 
+    
+    
+    return selectedDate.toString(); 
 }
     public Connection getConnection() {
     try {
@@ -98,13 +95,9 @@ public class StallAssignment extends javax.swing.JFrame {
     }
 }
     public void setTodayAsDefault() {
-    // If you want to set today's date as default
+    
     LocalDate today = LocalDate.now();
     
-    // Set date to your date picker component
-    // This depends on your date component type
-    // For example, if using JDateChooser:
-    // jDateChooser1.setDate(java.sql.Date.valueOf(today));
     
     System.out.println("Default date set to: " + today.toString());
 }
@@ -120,10 +113,10 @@ public class StallAssignment extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cmbvendor = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        lstavailable = new javax.swing.JList<>();
         lbassignmentdate = new javax.swing.JLabel();
         btnassign = new javax.swing.JButton();
         btncancel = new javax.swing.JButton();
@@ -133,16 +126,16 @@ public class StallAssignment extends javax.swing.JFrame {
 
         jLabel1.setText("Vendor");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbvendor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel2.setText("Available");
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        lstavailable.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(lstavailable);
 
         lbassignmentdate.setText("Assignment Date");
 
@@ -173,7 +166,7 @@ public class StallAssignment extends javax.swing.JFrame {
                 .addGap(116, 116, 116)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbvendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(9, 9, 9)
                         .addComponent(clndassignmentdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -193,7 +186,7 @@ public class StallAssignment extends javax.swing.JFrame {
                         .addGap(63, 63, 63)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel1)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cmbvendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(31, 31, 31)
@@ -219,33 +212,33 @@ public class StallAssignment extends javax.swing.JFrame {
 
     private void btnassignActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnassignActionPerformed
         // TODO add your handling code here:
-    // Get selected vendor
-    if (jComboBox1.getSelectedIndex() == 0) { // Replace with your combo box name
+    
+    if (cmbvendor.getSelectedIndex() == 0) {
         JOptionPane.showMessageDialog(this, "Please select a vendor!");
         return;
     }
     
-    // Get selected stall
-    String selectedStall = jList1.getSelectedValue(); // Replace with your list name
+    
+    String selectedStall = lstavailable.getSelectedValue(); 
     if (selectedStall == null) {
         JOptionPane.showMessageDialog(this, "Please select an available stall!");
         return;
     }
     
-    // Extract vendor ID
-    String vendorInfo = jComboBox1.getSelectedItem().toString();
+    
+    String vendorInfo = cmbvendor.getSelectedItem().toString();
     int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
     
-    // Extract stall number
+   
     String stallNumber = selectedStall.split(" - ")[0];
     
-    // Get assignment date
+    
     String assignmentDate = getSelectedDate();
     
     try {
         Connection conn = getConnection();
         
-        // Get stall ID
+        
         String getStallIdSql = "SELECT stall_id, monthly_rent FROM stalls WHERE stall_number = ?";
         PreparedStatement getStallPst = conn.prepareStatement(getStallIdSql);
         getStallPst.setString(1, stallNumber);
@@ -255,7 +248,7 @@ public class StallAssignment extends javax.swing.JFrame {
             int stallId = stallRs.getInt("stall_id");
             double monthlyRent = stallRs.getDouble("monthly_rent");
             
-            // Check if vendor already has an active assignment
+            
             String checkSql = "SELECT * FROM stall_assignments WHERE vendor_id = ? AND status = 'Active'";
             PreparedStatement checkPst = conn.prepareStatement(checkSql);
             checkPst.setInt(1, vendorId);
@@ -272,7 +265,7 @@ public class StallAssignment extends javax.swing.JFrame {
                 }
             }
             
-            // Insert stall assignment
+            
             String assignSql = "INSERT INTO stall_assignments (vendor_id, stall_id, assignment_date, monthly_rent, status) VALUES (?, ?, ?, ?, 'Active')";
             PreparedStatement assignPst = conn.prepareStatement(assignSql);
             assignPst.setInt(1, vendorId);
@@ -283,7 +276,7 @@ public class StallAssignment extends javax.swing.JFrame {
             int result = assignPst.executeUpdate();
             
             if (result > 0) {
-                // Update stall status to occupied
+                
                 String updateStallSql = "UPDATE stalls SET status = 'Occupied' WHERE stall_id = ?";
                 PreparedStatement updatePst = conn.prepareStatement(updateStallSql);
                 updatePst.setInt(1, stallId);
@@ -293,12 +286,12 @@ public class StallAssignment extends javax.swing.JFrame {
                     "Stall " + stallNumber + " assigned successfully to vendor!\n" +
                     "Monthly Rent: UGX " + monthlyRent);
                 
-                // Refresh the available stalls list
+                
                 loadAvailableStalls();
                 
-                // Reset selections
-                jComboBox1.setSelectedIndex(0);
-                jList1.clearSelection();
+               
+                cmbvendor.setSelectedIndex(0);
+                lstavailable.clearSelection();
                 
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to assign stall. Please try again.");
@@ -315,7 +308,7 @@ public class StallAssignment extends javax.swing.JFrame {
     private void btncancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncancelActionPerformed
         // TODO add your handling code here:
     this.setVisible(false);
-    new StallManagement().setVisible(true); // Go back to stall management
+    new StallManagement().setVisible(true); 
 
     }//GEN-LAST:event_btncancelActionPerformed
 
@@ -348,11 +341,11 @@ public class StallAssignment extends javax.swing.JFrame {
     private javax.swing.JButton btnassign;
     private javax.swing.JButton btncancel;
     private com.toedter.calendar.JCalendar clndassignmentdate;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> cmbvendor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbassignmentdate;
+    private javax.swing.JList<String> lstavailable;
     // End of variables declaration//GEN-END:variables
 }

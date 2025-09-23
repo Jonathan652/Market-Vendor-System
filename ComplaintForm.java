@@ -4,10 +4,16 @@
  */
 package bse_oop2_2025;
 
+import java.sql.*;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.time.LocalDate;
+
 /**
  *
  * @author jonah
  */
+
 public class ComplaintForm extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ComplaintForm.class.getName());
@@ -17,7 +23,59 @@ public class ComplaintForm extends javax.swing.JFrame {
      */
     public ComplaintForm() {
         initComponents();
+        loadVendors();
+        loadComplaints();
+}
+
+private void loadVendors() {
+    try {
+        Connection conn = DbConnection.getConnection();
+        String sql = "SELECT vendor_id, CONCAT(first_name, ' ', last_name) AS vendor_name FROM vendors WHERE status = 'Active'";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        
+        cmboxvendor.removeAllItems(); 
+        cmboxvendor.addItem("Select Vendor");
+        
+        while (rs.next()) {
+            String item = rs.getInt("vendor_id") + " - " + rs.getString("vendor_name");
+            cmboxvendor.addItem(item);
+        }
+        
+        conn.close();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error loading vendors: " + e.getMessage());
     }
+
+    }
+public void loadComplaints() {
+    try {
+        try (Connection conn = DbConnection.getConnection()) {
+            String sql = "SELECT c.complaint_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, " +
+                    "c.description, c.complaint_date, c.status FROM complaints c " +
+                    "JOIN vendors v ON c.vendor_id = v.vendor_id ORDER BY c.complaint_date DESC";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            DefaultTableModel model = (DefaultTableModel) tblcomplaints.getModel(); 
+            model.setRowCount(0);
+            model.setColumnIdentifiers(new Object[]{"ID", "Vendor", "Description", "Date", "Status"});
+            
+            while (rs.next()) {
+                Object[] row = {
+                    rs.getInt("complaint_id"),
+                    rs.getString("vendor_name"),
+                    rs.getString("description").substring(0, Math.min(50, rs.getString("description").length())) + "...",
+                    rs.getDate("complaint_date"),
+                    rs.getString("status")
+                };
+                model.addRow(row);
+            }
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error loading complaints: " + e.getMessage());
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -32,15 +90,15 @@ public class ComplaintForm extends javax.swing.JFrame {
         lbcomplaint = new javax.swing.JLabel();
         lbdescription = new javax.swing.JLabel();
         btnsubmitcomplaint = new javax.swing.JButton();
-        lbrecent = new javax.swing.JLabel();
         btnupdatestatus = new javax.swing.JButton();
         btnbacktoMain = new javax.swing.JButton();
         cmboxvendor = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        txtdescription = new javax.swing.JTextArea();
         clndcomplaint = new com.toedter.calendar.JCalendar();
+        lbcomplaints = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblcomplaints = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -51,25 +109,51 @@ public class ComplaintForm extends javax.swing.JFrame {
         lbdescription.setText("Description");
 
         btnsubmitcomplaint.setText("Submit Complaint");
-
-        lbrecent.setText("Recent");
+        btnsubmitcomplaint.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnsubmitcomplaintActionPerformed(evt);
+            }
+        });
 
         btnupdatestatus.setText("Update Status");
+        btnupdatestatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnupdatestatusActionPerformed(evt);
+            }
+        });
 
         btnbacktoMain.setText("Back to Main");
+        btnbacktoMain.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnbacktoMainActionPerformed(evt);
+            }
+        });
 
         cmboxvendor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+        cmboxvendor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmboxvendorActionPerformed(evt);
+            }
         });
-        jScrollPane2.setViewportView(jList1);
+
+        txtdescription.setColumns(20);
+        txtdescription.setRows(5);
+        jScrollPane1.setViewportView(txtdescription);
+
+        lbcomplaints.setText("Complaints");
+
+        tblcomplaints.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(tblcomplaints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -82,62 +166,61 @@ public class ComplaintForm extends javax.swing.JFrame {
                 .addComponent(btnbacktoMain)
                 .addGap(38, 38, 38))
             .addGroup(layout.createSequentialGroup()
+                .addGap(224, 224, 224)
+                .addComponent(btnsubmitcomplaint)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(lbdescription)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(lbvendor)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lbrecent)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lbcomplaint)
+                        .addComponent(lbcomplaints)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 186, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(clndcomplaint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(15, 15, 15))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(cmboxvendor, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(48, 48, 48))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(22, 22, 22))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnsubmitcomplaint)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lbdescription)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lbcomplaint)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(cmboxvendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(107, 107, 107))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(243, 243, 243)
-                                        .addComponent(clndcomplaint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 61, Short.MAX_VALUE)))))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(52, 52, 52)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbvendor)
-                    .addComponent(cmboxvendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(76, 76, 76)
-                        .addComponent(lbcomplaint)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(lbdescription)
-                        .addGap(35, 35, 35)
-                        .addComponent(btnsubmitcomplaint)
-                        .addGap(48, 48, 48)
-                        .addComponent(lbrecent)
-                        .addGap(51, 51, 51))
+                        .addGap(108, 108, 108)
+                        .addComponent(lbcomplaints))
                     .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(46, 46, 46)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(lbvendor)
+                        .addGap(30, 30, 30))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(cmboxvendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(39, 39, 39)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(clndcomplaint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                        .addGap(28, 28, 28)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(42, 42, 42)))
+                        .addGap(16, 16, 16)
+                        .addComponent(btnsubmitcomplaint)
+                        .addGap(27, 27, 27))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(lbcomplaint)
+                        .addGap(113, 113, 113)
+                        .addComponent(lbdescription)
+                        .addGap(82, 82, 82)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(btnupdatestatus)
@@ -150,30 +233,119 @@ public class ComplaintForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cmboxvendorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmboxvendorActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmboxvendorActionPerformed
+
+    private void btnsubmitcomplaintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsubmitcomplaintActionPerformed
+        // TODO add your handling code here:
+        if (cmboxvendor.getSelectedIndex() == 0) {
+            JOptionPane.showMessageDialog(this, "Please select a vendor!");
+            return;
+        }
+
+        String description = txtdescription.getText().trim(); 
+        if (description.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter complaint description!");
+            return;
+        }
+
+        try {
+            String vendorInfo = cmboxvendor.getSelectedItem().toString();
+            int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
+
+            try (Connection conn = DbConnection.getConnection()) {
+                String sql = "INSERT INTO complaints (vendor_id, complaint_date, description, status) VALUES (?, ?, ?, 'Open')";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setInt(1, vendorId);
+                pst.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
+                pst.setString(3, description);
+
+                int result = pst.executeUpdate();
+
+                if (result > 0) {
+                    JOptionPane.showMessageDialog(this, "Complaint submitted successfully!");
+                    txtdescription.setText("");
+                    cmboxvendor.setSelectedIndex(0);
+                    loadComplaints();
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error submitting complaint: " + e.getMessage());
+        }
+
+
+    }//GEN-LAST:event_btnsubmitcomplaintActionPerformed
+
+    private void btnupdatestatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnupdatestatusActionPerformed
+        // TODO add your handling code here:
+        int selectedRow = tblcomplaints.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a complaint to update!");
+            return;
+        }
+
+        String[] statuses = {"Open", "Investigating", "Resolved", "Closed"};
+        String selectedStatus = (String) JOptionPane.showInputDialog(this,
+                "Select new status:", "Update Status",
+                JOptionPane.QUESTION_MESSAGE, null, statuses, statuses[0]);
+
+        if (selectedStatus != null) {
+            int complaintId = (Integer) tblcomplaints.getValueAt(selectedRow, 0);
+
+            try {
+                Connection conn = DbConnection.getConnection();
+                String sql = "UPDATE complaints SET status = ? WHERE complaint_id = ?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setString(1, selectedStatus);
+                pst.setInt(2, complaintId);
+
+                int result = pst.executeUpdate();
+
+                if (result > 0) {
+                    JOptionPane.showMessageDialog(this, "Status updated successfully!");
+                    loadComplaints();
+                }
+
+                conn.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error updating status: " + e.getMessage());
+            }
+        }
+
+    }//GEN-LAST:event_btnupdatestatusActionPerformed
+
+    private void btnbacktoMainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbacktoMainActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        new MainDashBoard().setVisible(true);
+    
+    }//GEN-LAST:event_btnbacktoMainActionPerformed
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+    /* Set the Nimbus look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+     */
+    try {
+        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            if ("Nimbus".equals(info.getName())) {
+                javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                break;
             }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new ComplaintForm().setVisible(true));
+    } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+        logger.log(java.util.logging.Level.SEVERE, null, ex);
     }
+    //</editor-fold>
+
+    /* Create and display the form */
+    java.awt.EventQueue.invokeLater(() -> new ComplaintForm().setVisible(true));
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnbacktoMain;
@@ -181,13 +353,13 @@ public class ComplaintForm extends javax.swing.JFrame {
     private javax.swing.JButton btnupdatestatus;
     private com.toedter.calendar.JCalendar clndcomplaint;
     private javax.swing.JComboBox<String> cmboxvendor;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel lbcomplaint;
+    private javax.swing.JLabel lbcomplaints;
     private javax.swing.JLabel lbdescription;
-    private javax.swing.JLabel lbrecent;
     private javax.swing.JLabel lbvendor;
+    private javax.swing.JTable tblcomplaints;
+    private javax.swing.JTextArea txtdescription;
     // End of variables declaration//GEN-END:variables
 }
