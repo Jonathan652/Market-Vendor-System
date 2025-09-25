@@ -21,6 +21,7 @@ public class AddStall extends javax.swing.JFrame {
     public AddStall() {
         initComponents();
          setupSectionComboBox();
+         setupStallnumberComboBox();
 }
 
 private void setupSectionComboBox() {
@@ -36,19 +37,14 @@ private void setupSectionComboBox() {
     cmboxsection.setSelectedIndex(0);
 
     }
-    public Connection getConnection() {
-    try {
-        String url = "jdbc:mysql://localhost:3306/market_vendor_db";
-        String username = "root";
-        String password = "Jonah@1170";
-        
-        Connection conn = DriverManager.getConnection(url, username, password);
-        return conn;
-    } catch (Exception e) {
-        System.out.println("Database connection error: " + e.getMessage());
-        return null;
+
+private void setupStallnumberComboBox(){
+    cmbstallnumber.removeAllItems();
+    for (int i =1;i <= 50; i++){
+        cmbstallnumber.addItem(String.format("A%02d", i));
     }
 }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -60,7 +56,6 @@ private void setupSectionComboBox() {
     private void initComponents() {
 
         lbstallmanagement = new javax.swing.JLabel();
-        txtstallnumber = new javax.swing.JTextField();
         lbsection = new javax.swing.JLabel();
         cmboxsection = new javax.swing.JComboBox<>();
         lbmonthlyrent = new javax.swing.JLabel();
@@ -69,6 +64,7 @@ private void setupSectionComboBox() {
         btncancel = new javax.swing.JButton();
         btnupdate = new javax.swing.JButton();
         btndelete = new javax.swing.JButton();
+        cmbstallnumber = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -93,6 +89,11 @@ private void setupSectionComboBox() {
         });
 
         btncancel.setText("Cancel");
+        btncancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btncancelActionPerformed(evt);
+            }
+        });
 
         btnupdate.setText("Update");
         btnupdate.addActionListener(new java.awt.event.ActionListener() {
@@ -107,6 +108,8 @@ private void setupSectionComboBox() {
                 btndeleteActionPerformed(evt);
             }
         });
+
+        cmbstallnumber.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -132,10 +135,10 @@ private void setupSectionComboBox() {
                                 .addComponent(btncancel)
                                 .addGap(21, 21, 21))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(cmboxsection, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtstallnumber, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 140, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cmbstallnumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(cmboxsection, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -148,7 +151,7 @@ private void setupSectionComboBox() {
                 .addGap(54, 54, 54)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbstallmanagement)
-                    .addComponent(txtstallnumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbstallnumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbsection)
@@ -172,16 +175,11 @@ private void setupSectionComboBox() {
     private void btnsaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsaveActionPerformed
         // TODO add your handling code here:
         
-    String stallNumber = txtstallnumber.getText().trim(); 
+    
     String section = cmboxsection.getSelectedItem().toString(); 
     String rentText = txtmonthlyrent.getText().trim(); 
     
     
-    if (stallNumber.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Please enter stall number!");
-        txtstallnumber.requestFocus();
-        return;
-    }
     
     if (rentText.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter monthly rent!");
@@ -190,11 +188,7 @@ private void setupSectionComboBox() {
     }
     
     
-    if (!stallNumber.matches("[A-Za-z][0-9]+")) {
-        JOptionPane.showMessageDialog(this, "Stall number should be like: A01, B15, C03!");
-        txtstallnumber.requestFocus();
-        return;
-    }
+    
     
     
     double rent;
@@ -202,7 +196,7 @@ private void setupSectionComboBox() {
         rent = Double.parseDouble(rentText);
         if (rent <= 0) {
             JOptionPane.showMessageDialog(this, "Rent amount must be greater than 0!");
-            txtstallnumber.requestFocus();
+            cmbstallnumber.requestFocus();
             return;
         }
     } catch (NumberFormatException e) {
@@ -213,25 +207,22 @@ private void setupSectionComboBox() {
     
     
     try {
-        Connection conn = getConnection();
+        Connection conn = DbConnection.getConnection();
         if (conn != null) {
             
             String checkSql = "SELECT * FROM stalls WHERE stall_number = ?";
             PreparedStatement checkPst = conn.prepareStatement(checkSql);
-            checkPst.setString(1, stallNumber.toUpperCase());
             ResultSet rs = checkPst.executeQuery();
             
             if (rs.next()) {
                 JOptionPane.showMessageDialog(this, "Stall number already exists! Please use a different number.");
-                txtstallnumber.setText("");
-                txtstallnumber.requestFocus();
+                cmbstallnumber.requestFocus();
                 return;
             }
             
             
             String sql = "INSERT INTO stalls (stall_number, section, monthly_rent, status) VALUES (?, ?, ?, 'Available')";
             PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setString(1, stallNumber.toUpperCase());
             pst.setString(2, section);
             pst.setDouble(3, rent);
             
@@ -262,7 +253,7 @@ private void setupSectionComboBox() {
 
     private void btndeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btndeleteActionPerformed
         // TODO add your handling code here:
-        String stallNumber = txtstallnumber.getText().trim(); 
+        String stallNumber = (String)cmbstallnumber.getSelectedItem();
     
     if (stallNumber.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter stall number to delete!");
@@ -276,7 +267,7 @@ private void setupSectionComboBox() {
     
     if (confirm == JOptionPane.YES_OPTION) {
         
-            try (Connection conn = getConnection()) {
+            try (Connection conn = DbConnection.getConnection()) {
                 String sql = "DELETE FROM stalls WHERE stall_number = ?";
                 PreparedStatement pst = conn.prepareStatement(sql);
                 pst.setString(1, stallNumber.toUpperCase());
@@ -299,6 +290,12 @@ private void setupSectionComboBox() {
     private void cmboxsectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmboxsectionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cmboxsectionActionPerformed
+
+    private void btncancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncancelActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        new MainDashBoard().setVisible(true);
+    }//GEN-LAST:event_btncancelActionPerformed
 
     /**
      * @param args the command line arguments
@@ -331,11 +328,11 @@ private void setupSectionComboBox() {
     private javax.swing.JButton btnsave;
     private javax.swing.JButton btnupdate;
     private javax.swing.JComboBox<String> cmboxsection;
+    private javax.swing.JComboBox<String> cmbstallnumber;
     private javax.swing.JLabel lbmonthlyrent;
     private javax.swing.JLabel lbsection;
     private javax.swing.JLabel lbstallmanagement;
     private javax.swing.JTextField txtmonthlyrent;
-    private javax.swing.JTextField txtstallnumber;
     // End of variables declaration//GEN-END:variables
 
     private void clearFields() {

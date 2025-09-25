@@ -25,20 +25,7 @@ public class MainDashBoard extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setTitle("Main Dashboard");
     }
-     public Connection getConnection() {
-        try {
-            String url = "jdbc:mysql://localhost:3306/market_vendor_db";
-            String username = "root";
-            String password = "Jonah@1170";
-            
-            Connection conn = DriverManager.getConnection(url, username, password);
-            return conn;
-        } catch (Exception e) {
-            System.out.println("Database connection error: " + e.getMessage());
-            return null;
-        }
-    }
-
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -95,6 +82,11 @@ public class MainDashBoard extends javax.swing.JFrame {
         });
 
         btnhandlecomplaints.setText("Handle_complaints");
+        btnhandlecomplaints.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnhandlecomplaintsActionPerformed(evt);
+            }
+        });
 
         btnlogout.setText("Log_out");
         btnlogout.addActionListener(new java.awt.event.ActionListener() {
@@ -144,6 +136,12 @@ public class MainDashBoard extends javax.swing.JFrame {
 
     private void btnviewreportsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnviewreportsActionPerformed
         // TODO add your handling code here:
+        try{
+            new Reports().setVisible(true);
+            this.setVisible(false);
+        }catch(Exception e) {
+            JOptionPane.showMessageDialog(this,"Error opening reports: " + e.getMessage());
+        }
         
     }//GEN-LAST:event_btnviewreportsActionPerformed
 
@@ -201,6 +199,16 @@ public class MainDashBoard extends javax.swing.JFrame {
         }
     
     }//GEN-LAST:event_btnlogoutActionPerformed
+
+    private void btnhandlecomplaintsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnhandlecomplaintsActionPerformed
+        // TODO add your handling code here:
+        try{
+            new ComplaintForm().setVisible(true);
+            this.setVisible(false);
+        }catch(Exception e){
+            JOptionPane.showMessageDialog(this, "Error opening Complaints:" + e.getMessage());
+        }
+    }//GEN-LAST:event_btnhandlecomplaintsActionPerformed
 
     /**
      * @param args the command line arguments

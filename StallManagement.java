@@ -198,7 +198,7 @@ public class StallManagement extends javax.swing.JFrame {
 
     private void btneditstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneditstallActionPerformed
         
-    int selectedRow = tblstalls.getSelectedRow(); // Replace with your table name
+    int selectedRow = tblstalls.getSelectedRow(); 
     
     if (selectedRow == -1) {
         JOptionPane.showMessageDialog(this, "Please select a stall to edit!");
@@ -207,7 +207,7 @@ public class StallManagement extends javax.swing.JFrame {
     
     String stallNumber = (String) tblstalls.getValueAt(selectedRow, 0);
     
-    // Get stall ID from database
+    
     try {
         try (Connection conn = getConnection()) {
             String sql = "SELECT stall_id FROM stalls WHERE stall_number = ?";
