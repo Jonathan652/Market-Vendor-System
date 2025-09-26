@@ -73,31 +73,38 @@ public class Paymentform extends javax.swing.JFrame {
 
     public void loadPendingFees() {
         try {
-            Connection conn = DbConnection.getConnection();
-            String sql = "SELECT f.fee_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, "
-                    + "f.amount, f.fee_date FROM daily_fees f "
-                    + "JOIN vendors v ON f.vendor_id = v.vendor_id "
-                    + "WHERE f.payment_status = 'Pending' ORDER BY f.fee_date DESC";
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-
-            cmbfeepay.removeAllItems(); 
-            cmbfeepay.addItem("Select fee to pay");
-
-            while (rs.next()) {
-                String feeInfo = "Fee #" + rs.getInt("fee_id") + " - "
-                        + rs.getString("vendor_name") + " - UGX "
-                        + rs.getDouble("amount") + " (" + rs.getDate("fee_date") + ")";
-                cmbfeepay.addItem(feeInfo);
-            }
-
-            conn.close();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error loading pending fees: " + e.getMessage());
+        Connection conn = DbConnection.getConnection();
+        String sql = "SELECT f.fee_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, " +
+                    "f.amount, f.fee_date FROM daily_fees f " +
+                    "JOIN vendors v ON f.vendor_id = v.vendor_id " +
+                    "WHERE f.payment_status = 'Pending' " +
+                    "ORDER BY f.fee_date DESC";
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+        
+        cmbfeepay.removeAllItems(); // Replace with your actual combo box name
+        cmbfeepay.addItem("Select fee to pay");
+        
+        boolean hasData = false;
+        while (rs.next()) {
+            hasData = true;
+            String feeInfo = "Fee #" + rs.getInt("fee_id") + " - " +
+                            rs.getString("vendor_name") + " - UGX " +
+                            rs.getDouble("amount") + " (" + rs.getDate("fee_date") + ")";
+            cmbfeepay.addItem(feeInfo);
         }
+        
+        if (!hasData) {
+            cmbfeepay.addItem("No pending fees found");
+        }
+        
+        conn.close();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Error loading pending fees: " + e.getMessage());
+        cmbfeepay.removeAllItems();
+        cmbfeepay.addItem("Error loading fees");
     }
-
-
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
