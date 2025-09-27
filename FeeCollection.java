@@ -49,11 +49,11 @@ public class FeeCollection extends javax.swing.JFrame {
         }
     }
     private void loadFeeTypes() {
-        cmbfeetype.removeAllItems();
-        cmbfeetype.addItem("Select Fee Type");
-        cmbfeetype.addItem("Monthly Rent");
-        cmbfeetype.addItem("Cleaning Fee");
-        cmbfeetype.addItem("Daily Revenue");
+        comboxfeetype.removeAllItems();
+        comboxfeetype.addItem("Select Fee Type");
+        comboxfeetype.addItem("Monthly Rent");
+        comboxfeetype.addItem("Cleaning Fee");
+        comboxfeetype.addItem("Daily Revenue");
     }
     private double getFeeAmount(String feeType) {
         switch (feeType) {
@@ -222,7 +222,7 @@ private void setupListSelection() {
         btnClear = new javax.swing.JButton();
         lbamount = new javax.swing.JLabel();
         txtamount = new javax.swing.JTextField();
-        cmbfeetype = new javax.swing.JComboBox<>();
+        comboxfeetype = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -287,7 +287,12 @@ private void setupListSelection() {
 
         lbamount.setText("Amount");
 
-        cmbfeetype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboxfeetype.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboxfeetype.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboxfeetypeActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -323,7 +328,9 @@ private void setupListSelection() {
                                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(369, 369, 369)
-                                .addComponent(txtamount, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(comboxfeetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtamount, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(216, 216, 216)
                         .addComponent(btnviewpayments))
@@ -346,8 +353,7 @@ private void setupListSelection() {
                                 .addGap(381, 381, 381)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cndate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cmbvendor, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cmbfeetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(cmbvendor, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(359, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -359,9 +365,9 @@ private void setupListSelection() {
                         .addComponent(cndate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cmbvendor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cmbfeetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
+                        .addComponent(comboxfeetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(txtamount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lbamount))
@@ -407,7 +413,7 @@ private void setupListSelection() {
             return;
         }
         
-        if (cmbfeetype.getSelectedIndex() == 0) {
+        if (comboxfeetype.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, "Please select a fee type!");
             return;
         }
@@ -421,7 +427,7 @@ private void setupListSelection() {
         try {
             double amount = Double.parseDouble(amountText);
             String vendorInfo = cmbvendor.getSelectedItem().toString();
-            String feeType = cmbfeetype.getSelectedItem().toString();
+            String feeType = comboxfeetype.getSelectedItem().toString();
             int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
             
             Connection conn = DbConnection.getConnection();
@@ -436,7 +442,7 @@ private void setupListSelection() {
             
             if (result > 0) {
                 JOptionPane.showMessageDialog(this, "Fee generated successfully!");
-                cmbfeetype.setSelectedIndex(0);
+                comboxfeetype.setSelectedIndex(0);
                 cmbvendor.setSelectedIndex(0);
                 txtamount.setText("");
                 loadPendingFeesList();
@@ -488,8 +494,8 @@ private void setupListSelection() {
 
     private void cmbvendorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbvendorActionPerformed
         // TODO add your handling code here
-        if (cmbfeetype.getSelectedIndex() > 0) {
-            String feeType = cmbfeetype.getSelectedItem().toString();
+        if (comboxfeetype.getSelectedIndex() > 0) {
+            String feeType = comboxfeetype.getSelectedItem().toString();
             double amount = getFeeAmount(feeType);
             txtamount.setText(String.valueOf(amount));
        
@@ -497,8 +503,8 @@ private void setupListSelection() {
     }
         private void cmbfeetypeActionPerformed(java.awt.event.ActionEvent evt) {                                           
     // Auto-fill amount when fee type is selected
-           if (cmbfeetype.getSelectedIndex() > 0) {
-            String feeType = cmbfeetype.getSelectedItem().toString();
+           if (comboxfeetype.getSelectedIndex() > 0) {
+            String feeType = comboxfeetype.getSelectedItem().toString();
             double amount = getFeeAmount(feeType);
             txtamount.setText(String.valueOf(amount));
     }
@@ -589,9 +595,19 @@ private void setupListSelection() {
         }
     }
     
+    
 
     }//GEN-LAST:event_btnClearActionPerformed
 
+    private void comboxfeetypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboxfeetypeActionPerformed
+        // TODO add your handling code here:
+        if (comboxfeetype.getSelectedIndex() > 0) {
+            String feeType = comboxfeetype.getSelectedItem().toString();
+            double amount = getFeeAmount(feeType);
+            txtamount.setText(String.valueOf(amount));
+        }
+    }//GEN-LAST:event_comboxfeetypeActionPerformed
+ 
     /**
      * @param args the command line arguments
      */
@@ -633,9 +649,9 @@ private void setupListSelection() {
     private javax.swing.JButton btndelete;
     private javax.swing.JButton btngeneratefee;
     private javax.swing.JButton btnviewpayments;
-    private javax.swing.JComboBox<String> cmbfeetype;
     private javax.swing.JComboBox<String> cmbvendor;
     private com.toedter.calendar.JCalendar cndate;
+    private javax.swing.JComboBox<String> comboxfeetype;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbCollected;
     private javax.swing.JLabel lbamount;
