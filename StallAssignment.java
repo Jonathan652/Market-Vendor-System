@@ -239,69 +239,54 @@ public class StallAssignment extends javax.swing.JFrame {
         Connection conn = getConnection();
         
         
-        String getStallIdSql = "SELECT stall_id, monthly_rent FROM stalls WHERE stall_number = ?";
+        String getStallIdSql = "SELECT stall_id FROM stalls WHERE stall_number = ?";
         PreparedStatement getStallPst = conn.prepareStatement(getStallIdSql);
         getStallPst.setString(1, stallNumber);
         ResultSet stallRs = getStallPst.executeQuery();
         
         if (stallRs.next()) {
             int stallId = stallRs.getInt("stall_id");
-            double monthlyRent = stallRs.getDouble("monthly_rent");
             
             
-            String checkSql = "SELECT * FROM stall_assignments WHERE vendor_id = ? AND status = 'Active'";
-            PreparedStatement checkPst = conn.prepareStatement(checkSql);
-            checkPst.setInt(1, vendorId);
-            ResultSet checkRs = checkPst.executeQuery();
-            
-            if (checkRs.next()) {
-                int confirm = JOptionPane.showConfirmDialog(this, 
-                    "This vendor already has an active stall assignment. Continue anyway?", 
-                    "Confirm Assignment", 
-                    JOptionPane.YES_NO_OPTION);
-                
-                if (confirm != JOptionPane.YES_OPTION) {
-                    return;
-                }
-            }
-            
-            
-            String assignSql = "INSERT INTO stall_assignments (vendor_id, stall_id, assignment_date, monthly_rent, status) VALUES (?, ?, ?, ?, 'Active')";
+           String assignSql = "INSERT INTO stall_assignments (vendor_id, stall_id, assignment_date, status) VALUES (?, ?, ?, 'Active')";
             PreparedStatement assignPst = conn.prepareStatement(assignSql);
             assignPst.setInt(1, vendorId);
             assignPst.setInt(2, stallId);
             assignPst.setDate(3, java.sql.Date.valueOf(assignmentDate));
-            assignPst.setDouble(4, monthlyRent);
             
             int result = assignPst.executeUpdate();
             
-            if (result > 0) {
-                
+             if (result > 0) {
+                // Update stall status to occupied
                 String updateStallSql = "UPDATE stalls SET status = 'Occupied' WHERE stall_id = ?";
                 PreparedStatement updatePst = conn.prepareStatement(updateStallSql);
                 updatePst.setInt(1, stallId);
                 updatePst.executeUpdate();
                 
-                JOptionPane.showMessageDialog(this, 
-                    "Stall " + stallNumber + " assigned successfully to vendor!\n" +
-                    "Monthly Rent: UGX " + monthlyRent);
+                JOptionPane.showMessageDialog(this, "Stall " + stallNumber + " assigned successfully to vendor!");
                 
+                loadAvailableStalls(); 
                 
-                loadAvailableStalls();
-                
-               
-                cmbvendor.setSelectedIndex(0);
+                cmbvendor.setSelectedIndex(0); // Reset vendor selection
                 lstavailable.clearSelection();
                 
-            } else {
+                } else {
                 JOptionPane.showMessageDialog(this, "Failed to assign stall. Please try again.");
             }
+        } else {
+            JOptionPane.showMessageDialog(this, "Selected stall not found in database!");
         }
         
         conn.close();
     } catch (Exception ex) {
         JOptionPane.showMessageDialog(this, "Error assigning stall: " + ex.getMessage());
-    }
+        ex.printStackTrace(); // This will help debug any other issues
+    
+}
+            
+            
+            
+           
 
     }//GEN-LAST:event_btnassignActionPerformed
 

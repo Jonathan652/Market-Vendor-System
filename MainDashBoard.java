@@ -150,7 +150,7 @@ public class MainDashBoard extends javax.swing.JFrame {
     
         // TODO add your handling code here:
         try {
-            new Add_vendor().setVisible(true);
+            new Vendor_management().setVisible(true);
             this.setVisible(false);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error opening vendor management: " + e.getMessage());

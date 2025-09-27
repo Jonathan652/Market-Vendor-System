@@ -174,74 +174,81 @@ private void setupStallnumberComboBox(){
 
     private void btnsaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsaveActionPerformed
         // TODO add your handling code here:
-        
+         Object stallNumberObj = cmbstallnumber.getSelectedItem(); // Your stall number combo
+    Object sectionObj = cmboxsection.getSelectedItem();     // Your section combo
+    String rentText =txtmonthlyrent.getText().trim();       // Your rent field
     
-    String section = cmboxsection.getSelectedItem().toString(); 
-    String rentText = txtmonthlyrent.getText().trim(); 
+    // Validate stall number selection
+    if (stallNumberObj == null || stallNumberObj.toString().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Please select a stall number!");
+        return;
+    }
     
+    // Validate section selection
+    if (sectionObj == null || sectionObj.toString().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Please select a section!");
+        return;
+    }
     
-    
+    // Validate rent amount
     if (rentText.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter monthly rent!");
         txtmonthlyrent.requestFocus();
         return;
     }
     
+    String stallNumber = stallNumberObj.toString().trim();
+    String section = sectionObj.toString().trim();
     
-    
-    
-    
-    double rent;
     try {
-        rent = Double.parseDouble(rentText);
+        double rent = Double.parseDouble(rentText);
         if (rent <= 0) {
-            JOptionPane.showMessageDialog(this, "Rent amount must be greater than 0!");
-            cmbstallnumber.requestFocus();
+            JOptionPane.showMessageDialog(this, "Rent must be greater than 0!");
             return;
         }
+        
+        Connection conn = DbConnection.getConnection();
+        
+        // Check for duplicate
+        String checkSql = "SELECT COUNT(*) FROM stalls WHERE stall_number = ?";
+        PreparedStatement checkPst = conn.prepareStatement(checkSql);
+        checkPst.setString(1, stallNumber);
+        ResultSet rs = checkPst.executeQuery();
+        
+        if (rs.next() && rs.getInt(1) > 0) {
+            JOptionPane.showMessageDialog(this, "Stall number already exists!");
+            return;
+        }
+        
+        // Insert new stall
+        String insertSql = "INSERT INTO stalls (stall_number, section, monthly_rent, status) VALUES (?, ?, ?, 'Available')";
+        PreparedStatement insertPst = conn.prepareStatement(insertSql);
+        insertPst.setString(1, stallNumber);
+        insertPst.setString(2, section);
+        insertPst.setDouble(3, rent);
+        
+        int result = insertPst.executeUpdate();
+        
+        if (result > 0) {
+            JOptionPane.showMessageDialog(this, "Stall saved successfully!");
+            // Reset form
+            cmbstallnumber.setSelectedIndex(0);
+            cmboxsection.setSelectedIndex(0);
+            txtmonthlyrent.setText("");
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to save stall!");
+        }
+        
+        conn.close();
+        
     } catch (NumberFormatException e) {
         JOptionPane.showMessageDialog(this, "Please enter a valid rent amount!");
-        txtmonthlyrent.requestFocus();
-        return;
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
     }
-    
-    
-    try {
-        Connection conn = DbConnection.getConnection();
-        if (conn != null) {
-            
-            String checkSql = "SELECT * FROM stalls WHERE stall_number = ?";
-            PreparedStatement checkPst = conn.prepareStatement(checkSql);
-            ResultSet rs = checkPst.executeQuery();
-            
-            if (rs.next()) {
-                JOptionPane.showMessageDialog(this, "Stall number already exists! Please use a different number.");
-                cmbstallnumber.requestFocus();
-                return;
-            }
-            
-            
-            String sql = "INSERT INTO stalls (stall_number, section, monthly_rent, status) VALUES (?, ?, ?, 'Available')";
-            PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setString(2, section);
-            pst.setDouble(3, rent);
-            
-            int result = pst.executeUpdate();
-            
-            if (result > 0) {
-                JOptionPane.showMessageDialog(this, "Stall added successfully!");
-                clearFields();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to add stall. Please try again.");
-            }
-            
-            conn.close();
-        } else {
-            JOptionPane.showMessageDialog(this, "Database connection failed!");
-        }
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(this, "Error saving stall: " + ex.getMessage());
-    }
+
+        
+        
 
     }//GEN-LAST:event_btnsaveActionPerformed
 
