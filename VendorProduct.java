@@ -12,9 +12,8 @@ import javax.swing.DefaultListModel;
  *
  * @author jonah
  */
-
 public class VendorProduct extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(VendorProduct.class.getName());
 
     /**
@@ -24,113 +23,173 @@ public class VendorProduct extends javax.swing.JFrame {
         initComponents();
         loadVendors();
         loadAllProducts();
+        loadAvailableProductsForVendor(currentVendorId);
+        loadAssignedProductsForVendor(currentVendorId);
 
     }
     private int currentVendorId = -1;
+
     public void loadVendors() {
-    try {
-        Connection conn = DbConnection.getConnection();
-        String sql = "SELECT vendor_id, CONCAT(first_name, ' ', last_name) AS vendor_name FROM vendors WHERE status = 'Active'";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
-        cmbvendor.removeAllItems(); 
-        cmbvendor.addItem("Select Vendor");
-        
-        while (rs.next()) {
-            String item = rs.getInt("vendor_id") + " - " + rs.getString("vendor_name");
-            cmbvendor.addItem(item);
+        try {
+            try (Connection conn = DbConnection.getConnection()) {
+                if (conn == null) {
+                    JOptionPane.showMessageDialog(this, "Cannot connect to database!");
+                    return;
+                }
+
+                String sql = "SELECT vendor_id, CONCAT(first_name, ' ', last_name) AS vendor_name FROM vendors WHERE status = 'Active'";
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+
+                cmbvendor.removeAllItems(); // Replace with your vendor combo name
+                cmbvendor.addItem("Select Vendor");
+
+                while (rs.next()) {
+                    String item = rs.getInt("vendor_id") + " - " + rs.getString("vendor_name");
+                    cmbvendor.addItem(item);
+                }
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading vendors: " + e.getMessage());
+            // Add default item if error occurs
+            cmbvendor.removeAllItems();
+            cmbvendor.addItem("Select Vendor");
         }
-        
-        conn.close();
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error loading vendors: " + e.getMessage());
     }
-}
+
+    public void clearDefaultListItems() {
+        // Clear default items from both lists
+        DefaultListModel<String> emptyModel = new DefaultListModel<>();
+        lstavailable.setModel(emptyModel);
+        lstassigned.setModel(emptyModel);
+
+        // Load all products into available list initially
+        loadAllProducts();
+    }
+
     public void loadAllProducts() {
-    try {
-        try (Connection conn = DbConnection.getConnection()) {
+        try {
+            Connection conn = DbConnection.getConnection();
+            if (conn == null) {
+                return;
+            }
+
             String sql = "SELECT product_id, product_name, category FROM products ORDER BY category, product_name";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
-            
+
             DefaultListModel<String> model = new DefaultListModel<>();
-            
+
             while (rs.next()) {
-                String productInfo = rs.getInt("product_id") + " - " +
-                        rs.getString("product_name") + " (" +
-                        rs.getString("category") + ")";
+                String productInfo = rs.getInt("product_id") + " - "
+                        + rs.getString("product_name") + " ("
+                        + rs.getString("category") + ")";
                 model.addElement(productInfo);
             }
-            
+
             lstavailable.setModel(model);
+            conn.close();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading products: " + e.getMessage());
         }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error loading products: " + e.getMessage());
     }
+
+    public void loadVendorProducts() {
+        if (currentVendorId == -1) {
+            return;
+        }
+
+        try {
+            Connection conn = DbConnection.getConnection();
+            String sql = "SELECT p.product_id, p.product_name, p.category, vp.selling_price "
+                    + "FROM vendor_products vp "
+                    + "JOIN products p ON vp.product_id = p.product_id "
+                    + "WHERE vp.vendor_id = ? AND vp.status = 'Active' "
+                    + "ORDER BY p.category, p.product_name";
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setInt(1, currentVendorId);
+            ResultSet rs = pst.executeQuery();
+
+            DefaultListModel<String> model = new DefaultListModel<>();
+
+            while (rs.next()) {
+                String productInfo = rs.getInt("product_id") + " - "
+                        + rs.getString("product_name") + " ("
+                        + rs.getString("category") + ")"
+                        + " - UGX " + rs.getDouble("selling_price");
+                model.addElement(productInfo);
+            }
+
+            lstassigned.setModel(model);
+
+            conn.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading vendor products: " + e.getMessage());
+        }
     }
-    public void loadAvailableProducts() {
-    if (currentVendorId == -1) return;
-    
-    try {
-        Connection conn = DbConnection.getConnection();
-        String sql = "SELECT p.product_id, p.product_name, p.category " +
+
+    public void loadAvailableProductsForVendor(int vendorId) {
+        try {
+            Connection conn = DbConnection.getConnection();
+            String sql = "SELECT p.product_id, p.product_name, p.category " +
                     "FROM products p " +
                     "WHERE p.product_id NOT IN (" +
                     "    SELECT vp.product_id FROM vendor_products vp " +
-                    "    WHERE vp.vendor_id = ? AND vp.status = 'Active'" +
+                    "    WHERE vp.vendor_id = ?" +
                     ") ORDER BY p.category, p.product_name";
-        PreparedStatement pst = conn.prepareStatement(sql);
-        pst.setInt(1, currentVendorId);
-        ResultSet rs = pst.executeQuery();
-        
-        DefaultListModel<String> model = new DefaultListModel<>();
-        
-        while (rs.next()) {
-            String productInfo = rs.getInt("product_id") + " - " + 
-                               rs.getString("product_name") + " (" + 
-                               rs.getString("category") + ")";
-            model.addElement(productInfo);
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setInt(1, vendorId);
+            ResultSet rs = pst.executeQuery();
+
+            DefaultListModel<String> model = new DefaultListModel<>();
+
+            while (rs.next()) {
+                String productInfo = rs.getInt("product_id") + " - "
+                        + rs.getString("product_name") + " ("
+                        + rs.getString("category") + ")";
+                model.addElement(productInfo);
+            }
+
+            lstavailable.setModel(model); // Replace with your Available list name
+            conn.close();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading available products: " + e.getMessage());
         }
-        
-        lstavailable.setModel(model); 
-        
-        conn.close();
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error loading available products: " + e.getMessage());
     }
-}
-    public void loadVendorProducts() {
-    if (currentVendorId == -1) return;
-    
-    try {
-        Connection conn = DbConnection.getConnection();
-        String sql = "SELECT p.product_id, p.product_name, p.category, vp.selling_price " +
+
+    public void loadAssignedProductsForVendor(int vendorId) {
+        try {
+            Connection conn = DbConnection.getConnection();
+            String sql = "SELECT p.product_id, p.product_name, p.category, vp.selling_price " +
                     "FROM vendor_products vp " +
                     "JOIN products p ON vp.product_id = p.product_id " +
-                    "WHERE vp.vendor_id = ? AND vp.status = 'Active' " +
+                    "WHERE vp.vendor_id = ? " +
                     "ORDER BY p.category, p.product_name";
-        PreparedStatement pst = conn.prepareStatement(sql);
-        pst.setInt(1, currentVendorId);
-        ResultSet rs = pst.executeQuery();
-        
-        DefaultListModel<String> model = new DefaultListModel<>();
-        
-        while (rs.next()) {
-            String productInfo = rs.getInt("product_id") + " - " + 
-                               rs.getString("product_name") + " (" + 
-                               rs.getString("category") + ")" +
-                               " - UGX " + rs.getDouble("selling_price");
-            model.addElement(productInfo);
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setInt(1, vendorId);
+            ResultSet rs = pst.executeQuery();
+
+            DefaultListModel<String> model = new DefaultListModel<>();
+
+            while (rs.next()) {
+                String productInfo = rs.getInt("product_id") + " - "
+                        + rs.getString("product_name") + " ("
+                        + rs.getString("category") + ")"
+                        + " - UGX " + rs.getDouble("selling_price");
+                model.addElement(productInfo);
+            }
+
+            lstassigned.setModel(model); // Replace with your Assigned list name
+            conn.close();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading assigned products: " + e.getMessage());
         }
-        
-        lstassigned.setModel(model);
-        
-        conn.close();
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error loading vendor products: " + e.getMessage());
+
     }
-}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -296,12 +355,12 @@ public class VendorProduct extends javax.swing.JFrame {
             String vendorInfo = cmbvendor.getSelectedItem().toString();
             currentVendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
 
-            loadVendorProducts();
-            loadAvailableProducts();
+            loadAvailableProductsForVendor(currentVendorId);
+            loadAssignedProductsForVendor(currentVendorId);
         } else {
-            currentVendorId = -1;
-            clearLists();
+            clearDefaultListItems();
         }
+
 
     }//GEN-LAST:event_cmbvendorActionPerformed
 
@@ -339,7 +398,7 @@ public class VendorProduct extends javax.swing.JFrame {
                     if (result > 0) {
                         JOptionPane.showMessageDialog(this, "Product removed successfully!");
                         loadVendorProducts();
-                        loadAvailableProducts();
+                       
                     } else {
                         JOptionPane.showMessageDialog(this, "Failed to remove product!");
                     }
@@ -399,7 +458,7 @@ public class VendorProduct extends javax.swing.JFrame {
             }
 
             Connection conn = DbConnection.getConnection();
-            String sql = "INSERT INTO vendor_products (vendor_id, product_id, selling_price, date_authorized, status) VALUES (?, ?, ?, CURDATE(), 'Active')";
+            String sql = "INSERT INTO vendor_products (vendor_id, product_id, selling_price,) VALUES (?, ?, ?, ')";
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setInt(1, currentVendorId);
             pst.setInt(2, productId);
@@ -410,7 +469,7 @@ public class VendorProduct extends javax.swing.JFrame {
             if (result > 0) {
                 JOptionPane.showMessageDialog(this, "Product added successfully!");
                 loadVendorProducts();
-                loadAvailableProducts();
+                
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to add product!");
             }
@@ -421,6 +480,8 @@ public class VendorProduct extends javax.swing.JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error adding product: " + e.getMessage());
         }
+        loadAvailableProductsForVendor(currentVendorId);
+        loadAssignedProductsForVendor(currentVendorId);
 
     }//GEN-LAST:event_btnaddproductActionPerformed
 
@@ -428,33 +489,33 @@ public class VendorProduct extends javax.swing.JFrame {
         // TODO add your handling code here:
         this.setVisible(false);
         new Vendor_management().setVisible(true);
-    
+
     }//GEN-LAST:event_btnbackActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-    /* Set the Nimbus look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-     */
-    try {
-        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
-                javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                break;
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
             }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-    } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-        logger.log(java.util.logging.Level.SEVERE, null, ex);
-    }
-    //</editor-fold>
+        //</editor-fold>
 
-    /* Create and display the form */
-    java.awt.EventQueue.invokeLater(() -> new VendorProduct().setVisible(true));
-}
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new VendorProduct().setVisible(true));
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnaddproduct;
@@ -473,7 +534,8 @@ public class VendorProduct extends javax.swing.JFrame {
     private javax.swing.JList<String> lstavailable;
     // End of variables declaration//GEN-END:variables
 
-    private void clearLists() {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-}
-}
+   
+
+       }
+
+
