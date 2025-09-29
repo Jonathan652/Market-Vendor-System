@@ -120,7 +120,7 @@ public class Vendor_management extends javax.swing.JFrame {
     private void btnbacktodashboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbacktodashboardActionPerformed
         // TODO add your handling code here:
         this.setVisible(false);
-        new Vendor_management().setVisible(true);
+        new MainDashBoard().setVisible(true);
     }//GEN-LAST:event_btnbacktodashboardActionPerformed
 
     /**

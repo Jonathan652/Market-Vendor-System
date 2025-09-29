@@ -150,6 +150,31 @@ private void setupListSelection() {
             JOptionPane.showMessageDialog(this, "Error loading vendors: " + e.getMessage());
         }
     }
+   private void loadVendorStallRent(int vendorId) {
+    try {
+        Connection conn = DbConnection.getConnection();
+        String sql = "SELECT s.monthly_rent FROM stall_assignments sa " +
+                    "JOIN stalls s ON sa.stall_id = s.stall_id " +
+                    "WHERE sa.vendor_id = ? AND sa.status = 'Active' " +
+                    "ORDER BY sa.assignment_date DESC LIMIT 1";
+        
+        PreparedStatement pst = conn.prepareStatement(sql);
+        pst.setInt(1, vendorId);
+        ResultSet rs = pst.executeQuery();
+        
+        if (rs.next()) {
+            double monthlyRent = rs.getDouble("monthly_rent");
+            txtamount.setText(String.valueOf(monthlyRent)); // Replace txtAmount with your amount field
+        } else {
+            txtamount.setText("1000"); // Default if no stall assigned
+        }
+        
+        conn.close();
+    } catch (Exception e) {
+        txtamount.setText("1000"); // Default on error
+        System.out.println("Error loading stall rent: " + e.getMessage());
+    }
+}
 
     
     private String getSelectedDate() {
@@ -494,12 +519,17 @@ private void setupListSelection() {
 
     private void cmbvendorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbvendorActionPerformed
         // TODO add your handling code here
-        if (comboxfeetype.getSelectedIndex() > 0) {
-            String feeType = comboxfeetype.getSelectedItem().toString();
-            double amount = getFeeAmount(feeType);
-            txtamount.setText(String.valueOf(amount));
-       
-        }
+        if (cmbvendor.getSelectedIndex() > 0) { // Replace cmbVendor with your combo name
+        String vendorInfo = cmbvendor.getSelectedItem().toString();
+        int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
+        
+        // Auto-populate monthly rent based on assigned stall
+        loadVendorStallRent(vendorId);
+    } else {
+        txtamount.setText("1000"); // Default amount when no vendor selected
+    }
+
+        
     }
         private void cmbfeetypeActionPerformed(java.awt.event.ActionEvent evt) {                                           
     // Auto-fill amount when fee type is selected
