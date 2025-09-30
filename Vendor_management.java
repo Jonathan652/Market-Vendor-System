@@ -17,6 +17,8 @@ public class Vendor_management extends javax.swing.JFrame {
      */
     public Vendor_management() {
         initComponents();
+        setLocationRelativeTo(null);
+        setTitle("Vendor Management");
     }
 
     /**

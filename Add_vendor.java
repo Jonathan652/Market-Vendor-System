@@ -30,20 +30,6 @@ private void setupComboBox() {
     cmboxvendortype.addItem("Temporary");
     }
     
-    public Connection getConnection() {
-    try {
-        String url = "jdbc:mysql://localhost:3306/market_vendor_db";
-        String username = "root";
-        String password = "Jonah@1170";
-        
-        Connection conn = DriverManager.getConnection(url, username, password);
-        return conn;
-    } catch (Exception e) {
-        System.out.println("Database connection error: " + e.getMessage());
-        return null;
-    }
-}
-    
     public void saveVendor() {
     String firstName = txtfirstname.getText().trim(); 
     String lastName = txtlastname.getText().trim(); 
@@ -77,7 +63,7 @@ private void setupComboBox() {
     }
     
     try {
-        Connection conn = getConnection();
+        Connection conn = DbConnection.getConnection();
         if (conn != null) {
             
             String checkSql = "SELECT * FROM vendors WHERE phone = ?";

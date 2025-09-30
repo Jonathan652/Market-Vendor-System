@@ -398,118 +398,49 @@ public class Paymentform extends javax.swing.JFrame {
         int feeId = Integer.parseInt(feeIdStr);
         
         try (Connection conn = DbConnection.getConnection()) {
-            // Get the LATEST payment for this fee
-            String sql = "SELECT p.payment_id, p.amount_paid, p.payment_date, p.payment_method, " +
-                        "CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, f.amount AS fee_amount " +
-                        "FROM payments p " +
-                        "JOIN daily_fees f ON p.fee_id = f.fee_id " +
+            // CHANGED: Get fee details directly instead of looking for payment record
+            String sql = "SELECT f.fee_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, " +
+                        "f.amount AS fee_amount, f.fee_date, f.payment_status " +
+                        "FROM daily_fees f " +
                         "JOIN vendors v ON f.vendor_id = v.vendor_id " +
-                        "WHERE p.fee_id = ? " +
-                        "ORDER BY p.payment_date DESC, p.payment_id DESC LIMIT 1";
+                        "WHERE f.fee_id = ?";
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setInt(1, feeId);
             ResultSet rs = pst.executeQuery();
             
             if (rs.next()) {
-                // Create PDF document
-                Document document = new Document(PageSize.A6);
-                
-                // Generate filename with timestamp
-                String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
-                String fileName = "Receipt_" + rs.getInt("payment_id") + "_" + timestamp + ".pdf";
-                
-                // Create file in user's downloads folder
-                String userHome = System.getProperty("user.home");
-                String filePath = userHome + "/Downloads/" + fileName;
-                
-                PdfWriter.getInstance(document, new java.io.FileOutputStream(filePath));
-                document.open();
-                
-                // Add title
-                com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-                Paragraph title = new Paragraph("MARKET VENDOR MANAGEMENT SYSTEM", titleFont);
-                title.setAlignment(Element.ALIGN_CENTER);
-                document.add(title);
-                
-                document.add(new Paragraph(" ")); // Empty line
-                
-                // Add receipt header
-                com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-                Paragraph header = new Paragraph("PAYMENT RECEIPT", headerFont);
-                header.setAlignment(Element.ALIGN_CENTER);
-                document.add(header);
-                
-                document.add(new Paragraph(" ")); // Empty line
-                
-                // Create table for receipt details
-                PdfPTable table = new PdfPTable(2);
-                table.setWidthPercentage(100);
-                table.setSpacingBefore(10f);
-                table.setSpacingAfter(10f);
-                
-                // Add receipt details
-                addTableRow(table, "Date:", rs.getDate("payment_date").toString());
-                addTableRow(table, "Receipt No:", "MV" + String.format("%05d", rs.getInt("payment_id")));
-                addTableRow(table, "Vendor:", rs.getString("vendor_name"));
-                addTableRow(table, "Fee Amount:", "UGX " + String.format("%,.2f", rs.getDouble("fee_amount")));
-                addTableRow(table, "Amount Paid:", "UGX " + String.format("%,.2f", rs.getDouble("amount_paid")));
-                addTableRow(table, "Payment Method:", rs.getString("payment_method"));
-                
-                document.add(table);
-                
-                // Add footer
-                document.add(new Paragraph(" "));
-                Paragraph footer1 = new Paragraph("Thank you for your business!");
-                footer1.setAlignment(Element.ALIGN_CENTER);
-                document.add(footer1);
-                
-                Paragraph footer2 = new Paragraph("For inquiries: 0414-123-456");
-                footer2.setAlignment(Element.ALIGN_CENTER);
-                document.add(footer2);
-                
-                Paragraph footer3 = new Paragraph("*** OFFICIAL RECEIPT - KEEP SAFE ***");
-                footer3.setAlignment(Element.ALIGN_CENTER);
-                com.itextpdf.text.Font footerFont = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8);
-                footer3.setFont(footerFont);
-                document.add(footer3);
-                
-                document.close();
-                
-                JOptionPane.showMessageDialog(this, 
-                    "PDF receipt generated successfully!\n" +
-                    "File saved to: " + filePath, 
-                    "Receipt Generated", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                String receipt = """
+                    MARKET VENDOR MANAGEMENT SYSTEM
+                    --------------------------------------
+                    FEE INVOICE
+                    --------------------------------------
+                    Date: %s          Invoice No: %d
                     
+                    Vendor: %s
+                    Fee Amount: UGX %,.2f
+                    Status: %s
+                    
+                    --------------------------------------
+                    Please pay at the accounts office
+                    For inquiries: 0414-123-456
+                    
+                    *** INVOICE - PAYMENT DUE ***
+                    """.formatted(
+                        rs.getDate("fee_date"),
+                        rs.getInt("fee_id"),
+                        rs.getString("vendor_name"),
+                        rs.getDouble("fee_amount"),
+                        rs.getString("payment_status")
+                    );
+
+                JOptionPane.showMessageDialog(this, receipt, "Fee Invoice", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, 
-                    "No payment found for this fee!\n" +
-                    "Please process the payment first using 'Process Payment' button.", 
-                    "No Payment Record", 
-                    JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Fee not found!");
             }
         }
     } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error generating PDF receipt: " + e.getMessage());
-        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Error generating receipt: " + e.getMessage());
     }
-}
-
-// Helper method to add rows to the PDF table
-private void addTableRow(PdfPTable table, String header, String value) {
-    com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
-    com.itextpdf.text.Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
-    
-    PdfPCell headerCell = new PdfPCell(new Phrase(header, headerFont));
-    headerCell.setBorder(Rectangle.NO_BORDER);
-    headerCell.setPadding(5);
-    
-    PdfPCell valueCell = new PdfPCell(new Phrase(value, valueFont));
-    valueCell.setBorder(Rectangle.NO_BORDER);
-    valueCell.setPadding(5);
-    
-    table.addCell(headerCell);
-    table.addCell(valueCell);
 
             
 

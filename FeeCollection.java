@@ -213,10 +213,10 @@ public class FeeCollection extends javax.swing.JFrame {
                 ResultSet rs = stmt.executeQuery(sql);
 
                 if (rs.next()) {
-                    double totalCollected = rs.getDouble("total_collected");
+                    
                     double totalPending = rs.getDouble("total_pending");
 
-                    lbCollected.setText("Total Collected: UGX " + totalCollected);
+                    
                     lbpending.setText("Total Pending: UGX " + totalPending);
                 }
             }
@@ -245,8 +245,6 @@ public class FeeCollection extends javax.swing.JFrame {
         btnviewpayments = new javax.swing.JButton();
         btnback = new javax.swing.JButton();
         btndelete = new javax.swing.JButton();
-        lbCollected = new javax.swing.JLabel();
-        txtcollected = new javax.swing.JTextField();
         cndate = new com.toedter.calendar.JCalendar();
         btnClear = new javax.swing.JButton();
         lbamount = new javax.swing.JLabel();
@@ -305,8 +303,6 @@ public class FeeCollection extends javax.swing.JFrame {
             }
         });
 
-        lbCollected.setText(" Collected");
-
         btnClear.setText("Clear");
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -346,15 +342,12 @@ public class FeeCollection extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lbCollected)
-                            .addComponent(lbpending))
+                        .addComponent(lbpending)
+                        .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(348, 348, 348)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtcollected, javax.swing.GroupLayout.PREFERRED_SIZE, 276, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 371, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(369, 369, 369)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -410,11 +403,7 @@ public class FeeCollection extends javax.swing.JFrame {
                         .addComponent(lbfee)
                         .addGap(59, 59, 59)))
                 .addComponent(btngeneratefee)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lbCollected)
-                    .addComponent(txtcollected, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(24, 24, 24)
+                .addGap(66, 66, 66)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(lbpending, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -675,7 +664,6 @@ public class FeeCollection extends javax.swing.JFrame {
     private com.toedter.calendar.JCalendar cndate;
     private javax.swing.JComboBox<String> comboxfeetype;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lbCollected;
     private javax.swing.JLabel lbamount;
     private javax.swing.JLabel lbdate;
     private javax.swing.JLabel lbfee;
@@ -683,7 +671,6 @@ public class FeeCollection extends javax.swing.JFrame {
     private javax.swing.JButton lbvendor;
     private javax.swing.JList<String> lstpending;
     private javax.swing.JTextField txtamount;
-    private javax.swing.JTextField txtcollected;
     // End of variables declaration//GEN-END:variables
 
 }
