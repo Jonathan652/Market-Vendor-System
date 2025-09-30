@@ -59,14 +59,14 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="txtpayment" min="-2" pref="117" max="-2" attributes="0"/>
                           <Component id="cmbfeepay" alignment="0" min="-2" pref="92" max="-2" attributes="0"/>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                              <Component id="cmboxpaymentmethod" min="-2" pref="93" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                              <Component id="cmboxpaymentmethod" min="-2" pref="129" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace pref="323" max="32767" attributes="0"/>
+              <EmptySpace pref="305" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

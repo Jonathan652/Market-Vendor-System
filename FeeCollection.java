@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package bse_oop2_2025;
+
 import java.awt.HeadlessException;
 import java.sql.*;
 import javax.swing.JOptionPane;
@@ -14,27 +15,28 @@ import javax.swing.DefaultListModel;
  * @author jonah
  */
 public class FeeCollection extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FeeCollection.class.getName());
 
     /**
      * Creates new form FeeCollection
      */
-     public FeeCollection() {
+    public FeeCollection() {
         initComponents();
-        setupDatabase();  // FIX DATABASE FIRST
+        setupDatabase();
         loadVendors();
         loadFeeTypes();
         loadTodaysFees();
-        calculateTotals(); 
+        calculateTotals();
         loadPendingFeesList();
         setupListSelection();
     }
+
     private void setupDatabase() {
         try {
             Connection conn = DbConnection.getConnection();
             Statement stmt = conn.createStatement();
-            
+
             // Check if fee_type column exists, if not add it
             try {
                 stmt.executeUpdate("ALTER TABLE daily_fees ADD COLUMN fee_type VARCHAR(50) DEFAULT 'Daily Revenue'");
@@ -42,12 +44,13 @@ public class FeeCollection extends javax.swing.JFrame {
             } catch (SQLException e) {
                 System.out.println("Column may already exist: " + e.getMessage());
             }
-            
+
             conn.close();
         } catch (Exception e) {
             System.out.println("Database setup error: " + e.getMessage());
         }
     }
+
     private void loadFeeTypes() {
         comboxfeetype.removeAllItems();
         comboxfeetype.addItem("Select Fee Type");
@@ -55,6 +58,7 @@ public class FeeCollection extends javax.swing.JFrame {
         comboxfeetype.addItem("Cleaning Fee");
         comboxfeetype.addItem("Daily Revenue");
     }
+
     private double getFeeAmount(String feeType) {
         switch (feeType) {
             case "Monthly Rent":
@@ -67,80 +71,82 @@ public class FeeCollection extends javax.swing.JFrame {
                 return 0.0;
         }
     }
-private void setupListSelection() {
+
+    private void setupListSelection() {
         lstpending.addListSelectionListener((javax.swing.event.ListSelectionEvent evt) -> {
             if (!evt.getValueIsAdjusting()) {
                 handlePendingFeeSelection();
             }
         });
     }
-    
+
     public void loadPendingFeesList() {
         try {
             Connection conn = DbConnection.getConnection();
-            
+
             // SIMPLE QUERY WITHOUT FEE_TYPE FIRST
-            String sql = "SELECT f.fee_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, " +
-                        "f.amount, f.fee_date, DATEDIFF(CURDATE(), f.fee_date) AS days_overdue " +
-                        "FROM daily_fees f " +
-                        "JOIN vendors v ON f.vendor_id = v.vendor_id " +
-                        "WHERE f.payment_status = 'Pending' " +
-                        "ORDER BY f.fee_date ASC";
-            
+            String sql = "SELECT f.fee_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, "
+                    + "f.amount, f.fee_date, DATEDIFF(CURDATE(), f.fee_date) AS days_overdue "
+                    + "FROM daily_fees f "
+                    + "JOIN vendors v ON f.vendor_id = v.vendor_id "
+                    + "WHERE f.payment_status = 'Pending' "
+                    + "ORDER BY f.fee_date ASC";
+
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
-            
+
             DefaultListModel<String> listModel = new DefaultListModel<>();
-            
+
             boolean hasData = false;
             while (rs.next()) {
                 hasData = true;
-                
+
                 String vendorName = rs.getString("vendor_name");
                 double amount = rs.getDouble("amount");
                 String feeDate = rs.getDate("fee_date").toString();
                 int daysOverdue = rs.getInt("days_overdue");
-                
+
                 // SIMPLE DISPLAY WITHOUT FEE_TYPE
                 String listItem = vendorName + " - UGX " + String.format("%.0f", amount) + " (" + feeDate + ")";
-                
+
                 if (daysOverdue > 0) {
                     listItem += " [" + daysOverdue + " days overdue]";
                 }
-                
+
                 listModel.addElement(listItem);
             }
-            
+
             if (!hasData) {
                 listModel.addElement("No pending fees found");
             }
-            
+
             lstpending.setModel(listModel);
             conn.close();
-            
+
         } catch (Exception e) {
             // SIMPLE ERROR HANDLING
             JOptionPane.showMessageDialog(this, "Error loading fees. Please check database connection.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
- private void handlePendingFeeSelection() {
+
+    private void handlePendingFeeSelection() {
         // SIMPLIFIED VERSION
         String selectedItem = lstpending.getSelectedValue();
         if (selectedItem != null && !selectedItem.equals("No pending fees found")) {
             JOptionPane.showMessageDialog(this, "Selected: " + selectedItem);
         }
     }
-   public void loadVendors() {
+
+    public void loadVendors() {
         try {
             try (Connection conn = DbConnection.getConnection()) {
                 String sql = "SELECT vendor_id, CONCAT(first_name, ' ', last_name) AS vendor_name FROM vendors WHERE status = 'Active'";
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
-                
+
                 cmbvendor.removeAllItems();
                 cmbvendor.addItem("Select Vendor");
-                
+
                 while (rs.next()) {
                     String item = rs.getInt("vendor_id") + " - " + rs.getString("vendor_name");
                     cmbvendor.addItem(item);
@@ -150,43 +156,43 @@ private void setupListSelection() {
             JOptionPane.showMessageDialog(this, "Error loading vendors: " + e.getMessage());
         }
     }
-   private void loadVendorStallRent(int vendorId) {
-    try {
-        Connection conn = DbConnection.getConnection();
-        String sql = "SELECT s.monthly_rent FROM stall_assignments sa " +
-                    "JOIN stalls s ON sa.stall_id = s.stall_id " +
-                    "WHERE sa.vendor_id = ? AND sa.status = 'Active' " +
-                    "ORDER BY sa.assignment_date DESC LIMIT 1";
-        
-        PreparedStatement pst = conn.prepareStatement(sql);
-        pst.setInt(1, vendorId);
-        ResultSet rs = pst.executeQuery();
-        
-        if (rs.next()) {
-            double monthlyRent = rs.getDouble("monthly_rent");
-            txtamount.setText(String.valueOf(monthlyRent)); // Replace txtAmount with your amount field
-        } else {
-            txtamount.setText("1000"); // Default if no stall assigned
-        }
-        
-        conn.close();
-    } catch (Exception e) {
-        txtamount.setText("1000"); // Default on error
-        System.out.println("Error loading stall rent: " + e.getMessage());
-    }
-}
 
-    
-    private String getSelectedDate() {
-    if (cndate.getDate() != null) { 
-        java.util.Date selectedDate = cndate.getDate();
-        java.sql.Date sqlDate = new java.sql.Date(selectedDate.getTime());
-        return sqlDate.toString();
-    } else {
-        return java.time.LocalDate.now().toString(); 
+    private void loadVendorStallRent(int vendorId) {
+        try {
+            Connection conn = DbConnection.getConnection();
+            String sql = "SELECT s.monthly_rent FROM stall_assignments sa "
+                    + "JOIN stalls s ON sa.stall_id = s.stall_id "
+                    + "WHERE sa.vendor_id = ? AND sa.status = 'Active' "
+                    + "ORDER BY sa.assignment_date DESC LIMIT 1";
+
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setInt(1, vendorId);
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+                double monthlyRent = rs.getDouble("monthly_rent");
+                txtamount.setText(String.valueOf(monthlyRent));
+            } else {
+                txtamount.setText("1000"); // Default if no stall assigned
+            }
+
+            conn.close();
+        } catch (Exception e) {
+            txtamount.setText("1000"); // Default on error
+            System.out.println("Error loading stall rent: " + e.getMessage());
+        }
     }
-}
-     
+
+    private String getSelectedDate() {
+        if (cndate.getDate() != null) {
+            java.util.Date selectedDate = cndate.getDate();
+            java.sql.Date sqlDate = new java.sql.Date(selectedDate.getTime());
+            return sqlDate.toString();
+        } else {
+            return java.time.LocalDate.now().toString();
+        }
+    }
+
     public void loadTodaysFees() {
         try {
             Connection conn = DbConnection.getConnection();
@@ -195,31 +201,29 @@ private void setupListSelection() {
             JOptionPane.showMessageDialog(this, "Error loading fees: " + e.getMessage());
         }
     }
-    
+
     public void calculateTotals() {
         try {
             try (Connection conn = DbConnection.getConnection()) {
-                String sql = "SELECT " +
-                        "SUM(CASE WHEN payment_status = 'Paid' THEN amount ELSE 0 END) AS total_collected, " +
-                        "SUM(CASE WHEN payment_status = 'Pending' THEN amount ELSE 0 END) AS total_pending " +
-                        "FROM daily_fees WHERE fee_date = CURDATE()";
+                String sql = "SELECT "
+                        + "SUM(CASE WHEN payment_status = 'Paid' THEN amount ELSE 0 END) AS total_collected, "
+                        + "SUM(CASE WHEN payment_status = 'Pending' THEN amount ELSE 0 END) AS total_pending "
+                        + "FROM daily_fees WHERE fee_date = CURDATE()";
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
-                
+
                 if (rs.next()) {
                     double totalCollected = rs.getDouble("total_collected");
                     double totalPending = rs.getDouble("total_pending");
-                    
-                    lbCollected.setText("Total Collected: UGX " + totalCollected); 
-                    lbpending.setText("Total Pending: UGX " + totalPending); 
+
+                    lbCollected.setText("Total Collected: UGX " + totalCollected);
+                    lbpending.setText("Total Pending: UGX " + totalPending);
                 }
             }
         } catch (SQLException e) {
             System.out.println("Error calculating totals: " + e.getMessage());
         }
     }
-
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -433,28 +437,28 @@ private void setupListSelection() {
 
     private void btngeneratefeeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btngeneratefeeActionPerformed
         // TODO add your handling code here:
-          if (cmbvendor.getSelectedIndex() == 0) {
+        if (cmbvendor.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, "Please select a vendor!");
             return;
         }
-        
+
         if (comboxfeetype.getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(this, "Please select a fee type!");
             return;
         }
-        
+
         String amountText = txtamount.getText().trim();
         if (amountText.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter fee amount!");
             return;
         }
-        
+
         try {
             double amount = Double.parseDouble(amountText);
             String vendorInfo = cmbvendor.getSelectedItem().toString();
             String feeType = comboxfeetype.getSelectedItem().toString();
             int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
-            
+
             Connection conn = DbConnection.getConnection();
             String sql = "INSERT INTO daily_fees (vendor_id, fee_date, fee_type, amount, payment_status) VALUES (?, ?, ?, ?, 'Pending')";
             PreparedStatement pst = conn.prepareStatement(sql);
@@ -462,9 +466,9 @@ private void setupListSelection() {
             pst.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
             pst.setString(3, feeType);
             pst.setDouble(4, amount);
-            
+
             int result = pst.executeUpdate();
-            
+
             if (result > 0) {
                 JOptionPane.showMessageDialog(this, "Fee generated successfully!");
                 comboxfeetype.setSelectedIndex(0);
@@ -472,160 +476,148 @@ private void setupListSelection() {
                 txtamount.setText("");
                 loadPendingFeesList();
             }
-            
+
             conn.close();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
-                                                
+
     }//GEN-LAST:event_btngeneratefeeActionPerformed
 
     private void btnbackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbackActionPerformed
         // TODO add your handling code here:
         this.setVisible(false);
-    new MainDashBoard().setVisible(true);
+        new MainDashBoard().setVisible(true);
 
     }//GEN-LAST:event_btnbackActionPerformed
 
     private void btndeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btndeleteActionPerformed
         // TODO add your handling code here:
-        
-    int feeId = 0; 
-    int confirm = JOptionPane.showConfirmDialog(this, 
-        "Are you sure you want to delete this fee?", 
-        "Confirm Delete", 
-        JOptionPane.YES_NO_OPTION);
-    
-    if (confirm == JOptionPane.YES_OPTION) {
-        try {
-            try (Connection conn = DbConnection.getConnection()) {
-                String sql = "DELETE FROM daily_fees WHERE fee_id = ?";
-                PreparedStatement pst = conn.prepareStatement(sql);
-                pst.setInt(1, feeId);
-                
-                int result = pst.executeUpdate();
-                
-                if (result > 0) {
-                    JOptionPane.showMessageDialog(this, "Fee deleted successfully!");
-                    loadTodaysFees(); // Refresh table
+
+        int feeId = 0;
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this fee?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                try (Connection conn = DbConnection.getConnection()) {
+                    String sql = "DELETE FROM daily_fees WHERE fee_id = ?";
+                    PreparedStatement pst = conn.prepareStatement(sql);
+                    pst.setInt(1, feeId);
+
+                    int result = pst.executeUpdate();
+
+                    if (result > 0) {
+                        JOptionPane.showMessageDialog(this, "Fee deleted successfully!");
+                        loadTodaysFees(); // Refresh table
+                    }
                 }
+            } catch (HeadlessException | SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error deleting fee: " + e.getMessage());
             }
-        } catch (HeadlessException | SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error deleting fee: " + e.getMessage());
         }
-    }
 
     }//GEN-LAST:event_btndeleteActionPerformed
 
     private void cmbvendorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbvendorActionPerformed
         // TODO add your handling code here
-        if (cmbvendor.getSelectedIndex() > 0) { // Replace cmbVendor with your combo name
-        String vendorInfo = cmbvendor.getSelectedItem().toString();
-        int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
-        
-        // Auto-populate monthly rent based on assigned stall
-        loadVendorStallRent(vendorId);
-    } else {
-        txtamount.setText("1000"); // Default amount when no vendor selected
-    }
+        if (cmbvendor.getSelectedIndex() > 0) { 
+            String vendorInfo = cmbvendor.getSelectedItem().toString();
+            int vendorId = Integer.parseInt(vendorInfo.split(" - ")[0]);
 
-        
-    }
-        private void cmbfeetypeActionPerformed(java.awt.event.ActionEvent evt) {                                           
-    // Auto-fill amount when fee type is selected
-           if (comboxfeetype.getSelectedIndex() > 0) {
-            String feeType = comboxfeetype.getSelectedItem().toString();
-            double amount = getFeeAmount(feeType);
-            txtamount.setText(String.valueOf(amount));
-    }
+            // Auto-populate monthly rent based on assigned stall
+            loadVendorStallRent(vendorId);
+        } else {
+            txtamount.setText("1000"); // Default amount when no vendor selected
+        }
 
-    
-    
+
     }//GEN-LAST:event_cmbvendorActionPerformed
 
     private void btnviewpaymentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnviewpaymentsActionPerformed
         // TODO add your handling code here:
-         try {
-        Connection conn = DbConnection.getConnection();
-        String sql = "SELECT p.payment_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, " +
-                    "p.amount_paid, p.payment_date, p.payment_method " +
-                    "FROM payments p " +
-                    "JOIN daily_fees f ON p.fee_id = f.fee_id " +
-                    "JOIN vendors v ON f.vendor_id = v.vendor_id " +
-                    "ORDER BY p.payment_date DESC LIMIT 20";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
-        String paymentList = "RECENT PAYMENTS:\n";
-        paymentList += "ID | Vendor | Amount | Date | Method\n";
-        
-        while (rs.next()) {
-            paymentList += rs.getInt("payment_id") + " | " +
-                          rs.getString("vendor_name") + " | UGX " +
-                          rs.getDouble("amount_paid") + " | " +
-                          rs.getDate("payment_date") + " | " +
-                          rs.getString("payment_method") + "\n";
+        try {
+            Connection conn = DbConnection.getConnection();
+            String sql = "SELECT p.payment_id, CONCAT(v.first_name, ' ', v.last_name) AS vendor_name, "
+                    + "p.amount_paid, p.payment_date, p.payment_method "
+                    + "FROM payments p "
+                    + "JOIN daily_fees f ON p.fee_id = f.fee_id "
+                    + "JOIN vendors v ON f.vendor_id = v.vendor_id "
+                    + "ORDER BY p.payment_date DESC LIMIT 20";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            String paymentList = "RECENT PAYMENTS:\n";
+            paymentList += "ID | Vendor | Amount | Date | Method\n";
+
+            while (rs.next()) {
+                paymentList += rs.getInt("payment_id") + " | "
+                        + rs.getString("vendor_name") + " | UGX "
+                        + rs.getDouble("amount_paid") + " | "
+                        + rs.getDate("payment_date") + " | "
+                        + rs.getString("payment_method") + "\n";
+            }
+
+            JOptionPane.showMessageDialog(this, paymentList, "Payment History", JOptionPane.INFORMATION_MESSAGE);
+            conn.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading payments: " + e.getMessage());
+
         }
-        
-        JOptionPane.showMessageDialog(this, paymentList, "Payment History", JOptionPane.INFORMATION_MESSAGE);
-        conn.close();
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(this, "Error loading payments: " + e.getMessage());
-    
-                                                       } 
     }//GEN-LAST:event_btnviewpaymentsActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         // TODO add your handling code here:
         String selectedItem = lstpending.getSelectedValue();
-    
-    if (selectedItem == null || selectedItem.equals("No pending fees found") || 
-        selectedItem.startsWith("Error loading")) {
-        JOptionPane.showMessageDialog(this, "Please select a pending fee to clear!");
-        return;
-    }
-    
-    int confirm = JOptionPane.showConfirmDialog(this, 
-        "Are you sure you want to delete this pending fee?\n" + selectedItem, 
-        "Confirm Delete", 
-        JOptionPane.YES_NO_OPTION);
-    
-    if (confirm == JOptionPane.YES_OPTION) {
-        try {
-            // Extract information from selected item
-            String[] parts = selectedItem.split(" - ");
-            String vendorName = parts[0];
-            String[] nameParts = vendorName.split(" ");
-            String firstName = nameParts[0];
-            String lastName = nameParts.length > 1 ? nameParts[1] : "";
-            
-            try (Connection conn = DbConnection.getConnection()) {
-                String sql = "DELETE f FROM daily_fees f " +
-                        "JOIN vendors v ON f.vendor_id = v.vendor_id " +
-                        "WHERE f.payment_status = 'Pending' AND v.first_name = ? " +
-                        (lastName.isEmpty() ? "" : "AND v.last_name = ?");
-                
-                PreparedStatement pst = conn.prepareStatement(sql);
-                pst.setString(1, firstName);
-                if (!lastName.isEmpty()) {
-                    pst.setString(2, lastName);
-                }
-                
-                int result = pst.executeUpdate();
-                
-                if (result > 0) {
-                    JOptionPane.showMessageDialog(this, "Pending fee deleted successfully!");
-                    loadPendingFeesList();
-                } else {
-                    JOptionPane.showMessageDialog(this, "No matching fee found to delete!");
-                }
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error deleting fee: " + e.getMessage());
+
+        if (selectedItem == null || selectedItem.equals("No pending fees found")
+                || selectedItem.startsWith("Error loading")) {
+            JOptionPane.showMessageDialog(this, "Please select a pending fee to clear!");
+            return;
         }
-    }
-    
-    
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this pending fee?\n" + selectedItem,
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                // Extract information from selected item
+                String[] parts = selectedItem.split(" - ");
+                String vendorName = parts[0];
+                String[] nameParts = vendorName.split(" ");
+                String firstName = nameParts[0];
+                String lastName = nameParts.length > 1 ? nameParts[1] : "";
+
+                try (Connection conn = DbConnection.getConnection()) {
+                    String sql = "DELETE f FROM daily_fees f "
+                            + "JOIN vendors v ON f.vendor_id = v.vendor_id "
+                            + "WHERE f.payment_status = 'Pending' AND v.first_name = ? "
+                            + (lastName.isEmpty() ? "" : "AND v.last_name = ?");
+
+                    PreparedStatement pst = conn.prepareStatement(sql);
+                    pst.setString(1, firstName);
+                    if (!lastName.isEmpty()) {
+                        pst.setString(2, lastName);
+                    }
+
+                    int result = pst.executeUpdate();
+
+                    if (result > 0) {
+                        JOptionPane.showMessageDialog(this, "Pending fee deleted successfully!");
+                        loadPendingFeesList();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "No matching fee found to delete!");
+                    }
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error deleting fee: " + e.getMessage());
+            }
+        }
+
 
     }//GEN-LAST:event_btnClearActionPerformed
 
@@ -637,7 +629,7 @@ private void setupListSelection() {
             txtamount.setText(String.valueOf(amount));
         }
     }//GEN-LAST:event_comboxfeetypeActionPerformed
- 
+
     /**
      * @param args the command line arguments
      */
@@ -694,6 +686,4 @@ private void setupListSelection() {
     private javax.swing.JTextField txtcollected;
     // End of variables declaration//GEN-END:variables
 
-
-    
 }
