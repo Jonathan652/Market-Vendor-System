@@ -20,6 +20,8 @@ public class CreateAccountForm extends javax.swing.JFrame {
      */
     public CreateAccountForm() {
         initComponents();
+        setLocationRelativeTo(null);
+        setTitle("Create Account Form");
         setupRoleComboBox();
     }
     private void setupRoleComboBox() {
