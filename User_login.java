@@ -19,13 +19,16 @@ public class User_login extends javax.swing.JFrame {
      */
     public User_login() {
         initComponents();
+        setLocationRelativeTo(null);
+        setTitle("Login Frame");
+        
     }
 
 
    private void checkLogin() {
     String username = txtusername.getText(); 
     
-    String  password = txtPassword.getText();
+    String  password = psd.getText();
     
     if (username.isEmpty() || password.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter username and password!");
@@ -49,7 +52,7 @@ public class User_login extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid username or password!");
                 txtusername.setText("");
-                txtPassword.setText("");
+                psd.setText("");
             }
             conn.close();
         } else {
@@ -60,8 +63,8 @@ public class User_login extends javax.swing.JFrame {
     }
     }
     public void createNewAccount() {
-    String username = txtusername.getText(); // Replace with your username field name
-    String password = txtPassword.getText(); // Replace with your password field name
+    String username = txtusername.getText(); 
+    String password = psd.getText(); 
     
     if (username.isEmpty() || password.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter username and password to create account!");
@@ -112,7 +115,7 @@ public class User_login extends javax.swing.JFrame {
             if (result > 0) {
                 JOptionPane.showMessageDialog(this, "Account created successfully! You can now login.");
                 txtusername.setText("");
-                txtPassword.setText("");
+                psd.setText("");
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to create account. Please try again.");
             }
@@ -141,7 +144,7 @@ public class User_login extends javax.swing.JFrame {
         btnlogin = new javax.swing.JButton();
         btncreate = new javax.swing.JButton();
         txtusername = new javax.swing.JTextField();
-        txtPassword = new javax.swing.JTextField();
+        psd = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -163,9 +166,9 @@ public class User_login extends javax.swing.JFrame {
             }
         });
 
-        txtPassword.addActionListener(new java.awt.event.ActionListener() {
+        txtusername.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtPasswordActionPerformed(evt);
+                txtusernameActionPerformed(evt);
             }
         });
 
@@ -186,10 +189,10 @@ public class User_login extends javax.swing.JFrame {
                             .addComponent(lbpassword)
                             .addComponent(lbusername))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtusername, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
-                            .addComponent(txtPassword))
-                        .addGap(69, 69, 69))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(psd, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtusername, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(58, 58, 58))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -201,7 +204,7 @@ public class User_login extends javax.swing.JFrame {
                 .addGap(51, 51, 51)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbpassword)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(psd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(54, 54, 54)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnlogin)
@@ -212,10 +215,6 @@ public class User_login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPasswordActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtPasswordActionPerformed
-
     private void btnloginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnloginActionPerformed
        checkLogin();
     }//GEN-LAST:event_btnloginActionPerformed
@@ -223,6 +222,10 @@ public class User_login extends javax.swing.JFrame {
     private void btncreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncreateActionPerformed
         createNewAccount();
     }//GEN-LAST:event_btncreateActionPerformed
+
+    private void txtusernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtusernameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtusernameActionPerformed
 
     /**
      * @param args the command line arguments
@@ -254,7 +257,7 @@ public class User_login extends javax.swing.JFrame {
     private javax.swing.JButton btnlogin;
     private javax.swing.JLabel lbpassword;
     private javax.swing.JLabel lbusername;
-    private javax.swing.JTextField txtPassword;
+    private javax.swing.JPasswordField psd;
     private javax.swing.JTextField txtusername;
     // End of variables declaration//GEN-END:variables
 }

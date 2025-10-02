@@ -7,6 +7,7 @@ package bse_oop2_2025;
 import java.sql.*;
 import javax.swing.JOptionPane;
 
+
 /**
  *
  * @author jonah
@@ -33,7 +34,7 @@ public class CreateAccountForm extends javax.swing.JFrame {
 }
     private void clearFields() {
     txtUsername.setText("");
-    txtPassword.setText("");
+    psd.setText("");
     txtConfirm.setText("");
     txtEmail.setText("");
     txtFullName.setText("");
@@ -53,7 +54,6 @@ public class CreateAccountForm extends javax.swing.JFrame {
         lbUsername = new javax.swing.JLabel();
         txtUsername = new javax.swing.JTextField();
         lbPassword = new javax.swing.JLabel();
-        txtPassword = new javax.swing.JTextField();
         lbConfirm = new javax.swing.JLabel();
         txtConfirm = new javax.swing.JTextField();
         lbEmail = new javax.swing.JLabel();
@@ -64,6 +64,7 @@ public class CreateAccountForm extends javax.swing.JFrame {
         cmbRole = new javax.swing.JComboBox<>();
         btnCreate = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
+        psd = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -112,11 +113,11 @@ public class CreateAccountForm extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(txtUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
-                        .addComponent(txtPassword)
                         .addComponent(txtConfirm))
                     .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtFullName, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(psd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGap(70, 70, 70)
@@ -135,7 +136,7 @@ public class CreateAccountForm extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbPassword)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(psd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lbConfirm)
@@ -165,7 +166,7 @@ public class CreateAccountForm extends javax.swing.JFrame {
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
         // TODO add your handling code here:
         String username = txtUsername.getText().trim(); 
-    String password = txtPassword.getText().trim();
+    String password = psd.getText().trim();
     String confirmPassword = txtConfirm.getText().trim();
     String email = txtEmail.getText().trim();
     String fullName = txtFullName.getText().trim();
@@ -180,7 +181,7 @@ public class CreateAccountForm extends javax.swing.JFrame {
     
     if (password.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Please enter password!");
-        txtPassword.requestFocus();
+        psd.requestFocus();
         return;
     }
     
@@ -319,10 +320,10 @@ public class CreateAccountForm extends javax.swing.JFrame {
     private javax.swing.JLabel lbPassword;
     private javax.swing.JLabel lbRole;
     private javax.swing.JLabel lbUsername;
+    private javax.swing.JPasswordField psd;
     private javax.swing.JTextField txtConfirm;
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtFullName;
-    private javax.swing.JTextField txtPassword;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 }
